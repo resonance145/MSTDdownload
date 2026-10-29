@@ -1,0 +1,1069 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>마스토돈 아카이브 뷰어</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap">
+<style id="mav-css">
+/* Layout: Mastodon web 3-column — left (search, filters, stats) · center 600px timeline column · right navigation */
+:root{
+  --bg:#eff3f5; --col:#ffffff; --col-hover:#f5f7fa; --line:#dde3ea; --text:#0f1115;
+  --muted:#606984; --link:#563acc; --brand:#6364ff; --brand-hover:#5354e0; --on-brand:#ffffff;
+  --chip:#e6eaf2; --overlay:rgba(10,12,20,.86); --bar:#d7dcf5; --bar-lead:#b9bdfa;
+  --warn:#b35a00;
+  --font:'Roboto','Noto Sans KR',-apple-system,'Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#191b22; --col:#282c37; --col-hover:#2f3441; --line:#393f4f; --text:#ffffff;
+  --muted:#9baec8; --link:#8c8dff; --brand:#6364ff; --brand-hover:#7778ff; --on-brand:#ffffff;
+  --chip:#393f4f; --overlay:rgba(0,0,0,.88); --bar:#3c4161; --bar-lead:#5458a8; --warn:#f0a63a;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#191b22; --col:#282c37; --col-hover:#2f3441; --line:#393f4f; --text:#ffffff;
+  --muted:#9baec8; --link:#8c8dff; --brand:#6364ff; --brand-hover:#7778ff; --on-brand:#ffffff;
+  --chip:#393f4f; --overlay:rgba(0,0,0,.88); --bar:#3c4161; --bar-lead:#5458a8; --warn:#f0a63a;
+  color-scheme:dark;
+}
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.45}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+img{max-width:100%}
+.ic{width:20px;height:20px;flex:none;display:inline-block;vertical-align:middle}
+.muted{color:var(--muted)}
+
+.layout{display:grid;grid-template-columns:285px minmax(0,600px) 285px;gap:12px;justify-content:center;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px;align-items:start}
+.side{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto;display:flex;flex-direction:column;gap:12px;scrollbar-width:thin}
+.panel{background:var(--col);border-radius:8px;padding:14px}
+.panel h3{margin:0 0 10px;font-size:12px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;padding:4px 2px}
+.brand .logo{width:32px;height:32px;border-radius:8px;background:var(--brand);color:var(--on-brand);display:grid;place-items:center}
+.brand small{display:block;font-weight:400;font-size:12px;color:var(--muted)}
+
+.search{position:relative}
+.search input{width:100%;background:var(--col);border:1px solid var(--line);border-radius:6px;padding:10px 12px 10px 38px;outline:none}
+.search input:focus{border-color:var(--brand)}
+.search .ic{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--muted);width:18px;height:18px}
+
+.drop{border:2px dashed var(--line);border-radius:8px;padding:16px 12px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.drop.over{border-color:var(--brand);background:var(--col-hover)}
+.drop p{margin:0;font-size:13px;color:var(--muted)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:6px;padding:9px 16px;font-weight:500;cursor:pointer;background:var(--brand);color:var(--on-brand);font-size:14px}
+.btn:hover{background:var(--brand-hover);text-decoration:none}
+.btn:disabled{opacity:.5;cursor:default}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--col-hover)}
+.btn.block{width:100%}
+.linkbtn{background:none;border:0;padding:0;color:var(--link);cursor:pointer;font-size:13px}
+.linkbtn:hover{text-decoration:underline}
+.small{font-size:12px;color:var(--muted);margin:0}
+.err{color:var(--warn);font-size:13px;margin:0}
+
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:transparent;border-radius:99px;padding:4px 10px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.chip[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--on-brand)}
+.chip .ic{width:15px;height:15px}
+.chip[aria-pressed="true"] .muted{color:inherit;opacity:.8}
+.tagchip{background:var(--chip);border:0;border-radius:4px;padding:3px 8px;font-size:13px;cursor:pointer;color:var(--text)}
+.tagchip:hover{background:var(--brand);color:var(--on-brand)}
+.tagchip b{font-weight:500;color:var(--muted);margin-left:4px}
+.tagchip:hover b{color:inherit}
+.row{display:flex;gap:8px;align-items:center}
+.row select{flex:1;min-width:0;background:var(--col);border:1px solid var(--line);border-radius:6px;padding:7px 8px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;margin:0}
+.stats div{min-width:0}
+.stats dt{font-size:12px;color:var(--muted)}
+.stats dd{margin:0;font-weight:700;font-size:18px;font-variant-numeric:tabular-nums}
+.stats dd.date{font-size:13px;font-weight:500}
+.years{display:flex;flex-direction:column;gap:4px;margin-top:12px}
+.years button{display:grid;grid-template-columns:42px 1fr 44px;align-items:center;gap:8px;background:none;border:0;padding:2px 0;cursor:pointer;font-size:12px;font-variant-numeric:tabular-nums;text-align:left}
+.years .track{height:8px;border-radius:4px;background:var(--chip);overflow:hidden}
+.years .fill{height:100%;background:var(--brand);border-radius:4px}
+.years button[aria-pressed="true"] span:first-child{color:var(--link);font-weight:700}
+.years button span:last-child{text-align:right;color:var(--muted)}
+
+/* center column */
+.column{background:var(--col);border-radius:8px;min-width:0;overflow:clip}
+.col-head{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--col);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:0 16px;height:52px;font-weight:500;font-size:16px}
+.col-head button{background:none;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;color:var(--link);padding:6px 0;font-weight:500}
+.banner{display:flex;gap:12px;align-items:center;padding:12px 16px;background:var(--chip);font-size:13px;flex-wrap:wrap}
+.banner p{margin:0;flex:1;min-width:180px}
+
+.account-header .hdr{aspect-ratio:3/1;background:var(--chip) center/cover no-repeat;max-width:100%}
+.ah-bar{display:flex;justify-content:space-between;align-items:flex-end;padding:0 16px;margin-top:-44px}
+.ah-avatar{width:94px;height:94px;border-radius:12px;border:4px solid var(--col);background:var(--chip);object-fit:cover;display:block}
+.ah-body{padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.ah-names h1{margin:0;font-size:22px;line-height:1.2;text-wrap:balance}
+.acct{color:var(--muted);font-size:15px;word-break:break-all}
+.ah-bio{overflow-wrap:anywhere}
+.ah-bio p{margin:0 0 8px}.ah-bio p:last-child{margin:0}
+.fields{border:1px solid var(--line);border-radius:6px;margin:0;overflow:hidden}
+.fields div{display:grid;grid-template-columns:minmax(80px,30%) 1fr;border-top:1px solid var(--line);font-size:14px}
+.fields div:first-child{border-top:0}
+.fields dt{padding:9px 12px;color:var(--muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:.04em;overflow-wrap:anywhere}
+.fields dd{margin:0;padding:9px 12px;overflow-wrap:anywhere}
+.ah-meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:var(--muted)}
+.ah-meta b{color:var(--text);font-variant-numeric:tabular-nums}
+.tabs{display:flex;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tabs a{flex:1 0 auto;text-align:center;padding:14px 12px;color:var(--muted);font-weight:500;font-size:14px;border-bottom:2px solid transparent;white-space:nowrap}
+.tabs a:hover{text-decoration:none;color:var(--text);background:var(--col-hover)}
+.tabs a[aria-current="page"]{color:var(--link);border-bottom-color:var(--brand)}
+.filter-note{padding:10px 16px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.empty{padding:48px 24px;text-align:center;color:var(--muted)}
+
+/* status */
+.status{position:relative;padding:16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px;cursor:pointer}
+.status:hover{background:var(--col-hover)}
+.status.focused{cursor:default;background:var(--col);scroll-margin-top:60px}
+.status.has-next::before{content:"";position:absolute;left:38px;top:66px;bottom:0;width:2px;background:var(--line)}
+.status.has-prev::after{content:"";position:absolute;left:38px;top:0;height:16px;width:2px;background:var(--line)}
+.status.has-next > :not(.st-head),.status.has-prev:not(.focused) > :not(.st-head){margin-left:58px}
+.prepend{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-weight:500;padding-left:20px}
+.prepend .ic{width:17px;height:17px}
+.st-head{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.st-avatar{width:46px;height:46px;border-radius:8px;background:var(--chip);flex:none;object-fit:cover;position:relative;z-index:1}
+.st-names{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.3;padding-top:3px}
+.st-names .dn{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-names .acct{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.st-time{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:14px;white-space:nowrap;padding-top:3px}
+.st-time a{color:inherit}
+.st-time .ic{width:16px;height:16px}
+.reply-to{font-size:13px;color:var(--muted);display:flex;gap:6px;align-items:center;min-width:0}
+.reply-to .ic{width:15px;height:15px}
+.reply-to a{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.content{overflow-wrap:anywhere;font-size:15px}
+.focused .content{font-size:19px;line-height:1.4}
+.content p{margin:0 0 .9em}.content p:last-child{margin-bottom:0}
+.content .invisible{font-size:0;line-height:0;display:inline-block;width:0;height:0;position:absolute}
+.content .ellipsis::after{content:"…"}
+.content blockquote{margin:0 0 .9em;padding-left:12px;border-left:3px solid var(--line);color:var(--muted)}
+.content pre{white-space:pre-wrap;background:var(--chip);padding:8px;border-radius:4px}
+.content code{background:var(--chip);padding:0 4px;border-radius:3px;font-size:.92em}
+.content a.mention,.content a.hashtag{color:var(--link)}
+.custom-emoji{height:1.4em;width:auto;vertical-align:middle;margin:-.2ex 0 .2ex;object-fit:contain}
+.cw{display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.cw p{margin:0;font-weight:500}
+.cw-btn{background:var(--chip);border:0;border-radius:4px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.03em}
+.cw-btn:hover{background:var(--brand);color:var(--on-brand)}
+
+.gallery{display:grid;gap:2px;border-radius:8px;overflow:hidden;aspect-ratio:16/9;max-width:100%;position:relative;background:var(--chip)}
+.gallery.n1{grid-template-columns:1fr}
+.gallery.n2{grid-template-columns:1fr 1fr}
+.gallery.n3{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.gallery.n3 .gi:first-child{grid-row:span 2}
+.gallery.n4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.gi{position:relative;min-width:0;min-height:0;background:var(--chip);border:0;padding:0;cursor:zoom-in;overflow:hidden}
+.gi img,.gi video{width:100%;height:100%;object-fit:cover;display:block}
+.gi .badge{position:absolute;left:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;font-size:11px;font-weight:700;border-radius:4px;padding:2px 6px;letter-spacing:.04em}
+.gi .play{position:absolute;inset:0;margin:auto;width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;display:grid;place-items:center}
+.gallery.blur .gi img,.gallery.blur .gi video{filter:blur(28px) saturate(.7);transform:scale(1.2)}
+.sens{position:absolute;inset:0;margin:auto;height:fit-content;width:fit-content;z-index:2;border:0;border-radius:8px;background:rgba(0,0,0,.6);color:#fff;padding:10px 16px;cursor:pointer;font-weight:500;text-align:center;line-height:1.35}
+.sens small{display:block;font-weight:400;opacity:.8}
+.audio-att{width:100%}
+.file-att{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:14px}
+
+.poll{display:flex;flex-direction:column;gap:6px}
+.poll-opt{position:relative;border-radius:4px;overflow:hidden;padding:7px 10px;display:flex;gap:10px;font-size:14px;align-items:center;min-height:34px}
+.poll-opt .fill{position:absolute;inset:0 auto 0 0;background:var(--bar);border-radius:4px}
+.poll-opt.lead .fill{background:var(--bar-lead)}
+.poll-opt span{position:relative}
+.poll-opt .pct{font-weight:700;min-width:42px;font-variant-numeric:tabular-nums}
+.poll-foot{font-size:13px;color:var(--muted)}
+
+.boost-card{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:8px;padding:12px;min-width:0}
+.boost-card .bi{width:40px;height:40px;border-radius:8px;background:var(--chip);display:grid;place-items:center;color:var(--muted);flex:none}
+.boost-card div{min-width:0}
+.boost-card a{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.boost-card p{margin:2px 0 0;font-size:13px;color:var(--muted)}
+
+.actions{display:flex;justify-content:space-between;max-width:420px;color:var(--muted)}
+.actions span{display:inline-flex;align-items:center;gap:6px;padding:4px;font-size:13px;opacity:.75}
+.actions .off{opacity:.3}
+.focus-meta{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.focus-meta .ic{width:16px;height:16px}
+
+.media-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px}
+.media-grid .gi{aspect-ratio:1}
+.linkcard{display:flex;gap:12px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);min-width:0}
+.linkcard:hover{background:var(--col-hover);text-decoration:none}
+.linkcard .bi{width:40px;height:40px;border-radius:8px;background:var(--chip);display:grid;place-items:center;color:var(--muted);flex:none}
+.linkcard div{min-width:0}
+.linkcard b{display:block;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.linkcard span{display:block;font-size:13px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.loadmore{padding:20px;text-align:center;color:var(--muted);font-size:13px}
+
+/* right nav */
+.nav{display:flex;flex-direction:column;background:transparent;padding:0}
+.nav a,.nav button{display:flex;align-items:center;gap:14px;padding:12px 14px;border-radius:8px;color:var(--text);font-size:16px;background:none;border:0;cursor:pointer;text-align:left;width:100%}
+.nav a:hover,.nav button:hover{background:var(--col);text-decoration:none}
+.nav a[aria-current="page"]{font-weight:700;color:var(--link)}
+.nav .ic{width:22px;height:22px}
+.nav hr{border:0;border-top:1px solid var(--line);margin:8px 14px}
+.nav .count{margin-left:auto;font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* overlays */
+.drop-ov{position:fixed;inset:0;z-index:50;background:var(--overlay);display:grid;place-items:center;color:#fff;font-size:20px;font-weight:500;pointer-events:none}
+.drop-ov div{border:3px dashed rgba(255,255,255,.6);border-radius:16px;padding:40px 48px}
+.lightbox{position:fixed;inset:0;z-index:40;background:var(--overlay);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.lb-stage{flex:1;min-height:0;width:100%;display:flex;align-items:center;justify-content:center}
+.lb-stage img,.lb-stage video{max-width:100%;max-height:100%;object-fit:contain;border-radius:4px}
+.lb-cap{color:#fff;font-size:14px;max-width:640px;text-align:center;max-height:6em;overflow:auto}
+.lb-cap a{color:#c8c9ff}
+.lb-btn{position:absolute;background:rgba(0,0,0,.5);color:#fff;border:0;border-radius:50%;width:44px;height:44px;display:grid;place-items:center;cursor:pointer}
+.lb-close{top:max(16px,env(safe-area-inset-top,0px));right:max(16px,env(safe-area-inset-right,0px))}
+.lb-prev{left:max(16px,env(safe-area-inset-left,0px));top:50%}
+.lb-next{right:max(16px,env(safe-area-inset-right,0px));top:50%}
+.modal{position:fixed;inset:0;z-index:45;background:var(--overlay);display:grid;place-items:center;padding:16px}
+.modal-card{background:var(--col);border-radius:12px;padding:20px;width:min(480px,100%);display:flex;flex-direction:column;gap:14px;max-height:100%;overflow:auto}
+.modal-card h2{margin:0;font-size:18px}
+.modal-card p{margin:0;font-size:14px;color:var(--muted)}
+.modal-card fieldset{border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:0;display:flex;flex-direction:column;gap:8px}
+.modal-card legend{font-size:13px;font-weight:500;padding:0 4px}
+.modal-card label{display:flex;gap:8px;align-items:center;font-size:14px}
+.modal-card .acts{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.note{background:var(--chip);border-radius:6px;padding:10px 12px;font-size:13px!important}
+.progress{font-size:13px;color:var(--link);min-height:1.2em}
+
+.panel-btn{margin-left:auto;background:none;border:0;border-radius:6px;padding:6px!important;color:var(--muted)!important;cursor:pointer;display:inline-flex}
+.panel-btn:hover{background:var(--col-hover);color:var(--text)!important}
+.panel-btn[aria-pressed="true"]{color:var(--link)!important}
+@media (min-width:841px){
+  body.left-hidden .side-left{display:none}
+  body.left-hidden .layout{grid-template-columns:minmax(0,600px) 285px}
+}
+@media (min-width:841px) and (max-width:1180px){
+  body.left-hidden .layout{grid-template-columns:minmax(0,600px)}
+}
+.topbar{display:none}
+.side-toggle{display:none}
+
+@media (max-width:1180px){
+  .layout{grid-template-columns:285px minmax(0,600px)}
+  .side-right{display:none}
+}
+@media (max-width:840px){
+  .layout{grid-template-columns:minmax(0,1fr);padding-block:12px;gap:10px}
+  .side{position:static;max-height:none;overflow:visible}
+  .side-left > .brand{display:none}
+  .side-left.collapsed .collapsible{display:none}
+  .topbar{display:flex;align-items:center;gap:10px;justify-content:space-between}
+  .topbar .brand{font-size:16px}
+  .topbar .acts{display:flex;gap:6px}
+  .topbar .btn{padding:8px 10px}
+  .side-toggle{display:flex}
+  .panel-btn{display:none}
+  .col-head{top:env(safe-area-inset-top,0px)}
+}
+@media (max-width:480px){
+  .media-grid{grid-template-columns:repeat(2,1fr)}
+  .focused .content{font-size:17px}
+  .ah-avatar{width:80px;height:80px}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head><body>
+
+<script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.57/dist/zip-full.min.js"></script>
+<script id="mav-js">
+(function(){
+"use strict";
+const EMBED = window.__MAV_EMBED__ || null;
+const PUBLIC = ['https://www.w3.org/ns/activitystreams#Public','as:Public','Public'];
+const $ = (s, r=document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- icons ---------- */
+const P = {
+  reply:'<path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z" fill="currentColor" stroke="none"/>',
+  boost:'<path d="M7 7h10v3l4-4-4-4v3H5v6h2V7zm10 10H7v-3l-4 4 4 4v-3h12v-6h-2v4z" fill="currentColor" stroke="none"/>',
+  star:'<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.8 6.8 19.6l1-5.8L3.5 9.7l5.9-.8z"/>',
+  bookmark:'<path d="M6.5 3.5h11v17l-5.5-3.6-5.5 3.6z"/>',
+  more:'<circle cx="5" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.8" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.8" fill="currentColor" stroke="none"/>',
+  globe:'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.5 3.8 5.4 3.8 8.5s-1.2 6-3.8 8.5c-2.6-2.5-3.8-5.4-3.8-8.5S9.4 6 12 3.5z"/>',
+  moon:'<path d="M19.5 14.2A8 8 0 1 1 9.8 4.5a6.4 6.4 0 0 0 9.7 9.7z"/>',
+  lock:'<rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5"/>',
+  at:'<circle cx="12" cy="12" r="3.6"/><path d="M15.6 12v1.6a2.6 2.6 0 0 0 5.2 0V12a8.8 8.8 0 1 0-3.4 7"/>',
+  posts:'<path d="M4.5 6.5h15M4.5 12h15M4.5 17.5h9"/>',
+  replies:'<path d="M4.5 5.5h15v10h-9l-4.5 3.5v-3.5h-1.5z"/>',
+  media:'<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-9 8.5"/>',
+  download:'<path d="M12 4v11M7 10.5l5 5 5-5M5 19.5h14"/>',
+  folder:'<path d="M3.5 6.5a2 2 0 0 1 2-2h4l2 2.5h7a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2h-13a2 2 0 0 1-2-2z"/>',
+  search:'<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5.5 5.5"/>',
+  back:'<path d="M19 12H5M11 6l-6 6 6 6"/>',
+  close:'<path d="M6 6l12 12M18 6L6 18"/>',
+  left:'<path d="M15 5l-7 7 7 7"/>', right:'<path d="M9 5l7 7-7 7"/>',
+  ext:'<path d="M14 4.5h5.5V10M19.5 4.5L11 13M17.5 14v5.5h-13v-13H10"/>',
+  play:'<path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/>',
+  filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+  sidebar:'<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/>',
+  file:'<path d="M6.5 3.5h7l4 4v13h-11z M13.5 3.5v4h4"/>',
+  mastodon:'<path d="M20.9 13.4c-.3 1.4-2.5 2.9-5 3.2-1.3.2-2.6.3-4 .2-2.2-.1-4-.5-4-.5v.6c.3 2 2 2.2 3.7 2.2 1.7.1 3.2-.4 3.2-.4l.1 1.5s-1.2.6-3.3.8c-1.2.1-2.6 0-4.3-.5-3.6-1-4.2-4.9-4.3-8.9V8.4c0-4 2.6-5.1 2.6-5.1C6.9 2.7 9.2 2.5 11.6 2.5h.1c2.4 0 4.7.2 6 .8 0 0 2.6 1.1 2.6 5.1 0 0 0 2.9-.4 5z" fill="currentColor" stroke="none"/><path d="M17.3 8.9v4.8h-1.9V9c0-1-.4-1.5-1.2-1.5-.9 0-1.4.6-1.4 1.8v2.5h-1.9V9.3c0-1.2-.5-1.8-1.4-1.8-.8 0-1.2.5-1.2 1.5v4.7H6.4V8.9c0-1 .3-1.8.8-2.3.5-.6 1.2-.9 2.1-.9 1 0 1.8.4 2.3 1.2l.5.8.5-.8c.5-.8 1.3-1.2 2.3-1.2.9 0 1.6.3 2.1.9.5.5.8 1.3.8 2.3z" fill="var(--brand)" stroke="none"/>'
+};
+const icon = (n, cls='') => `<svg class="ic ${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]||''}</svg>`;
+const VIS = {
+  public:{label:'공개', icon:'globe'}, unlisted:{label:'조용한 공개', icon:'moon'},
+  private:{label:'팔로워 전용', icon:'lock'}, direct:{label:'개인적인 멘션', icon:'at'}
+};
+
+/* ---------- dates ---------- */
+const fmtFull = iso => { const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('ko-KR',{year:'numeric',month:'long',day:'numeric',hour:'numeric',minute:'2-digit'}); };
+const fmtDay = iso => { const d = new Date(iso); return isNaN(d) ? '-' : d.toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric'}); };
+function relTime(iso){
+  const t = new Date(iso); if (isNaN(t)) return '';
+  const s = (Date.now() - t) / 1000;
+  if (s < 60) return '방금';
+  if (s < 3600) return Math.floor(s/60) + '분';
+  if (s < 86400) return Math.floor(s/3600) + '시간';
+  if (s < 86400*7) return Math.floor(s/86400) + '일';
+  const now = new Date();
+  return t.getFullYear() === now.getFullYear() ? `${t.getMonth()+1}월 ${t.getDate()}일` : `${t.getFullYear()}. ${t.getMonth()+1}. ${t.getDate()}.`;
+}
+
+/* ---------- archive file system ---------- */
+const MIME = {jpg:'image/jpeg',jpeg:'image/jpeg',png:'image/png',gif:'image/gif',webp:'image/webp',avif:'image/avif',heic:'image/heic',svg:'image/svg+xml',
+  mp4:'video/mp4',m4v:'video/mp4',webm:'video/webm',mov:'video/quicktime',mp3:'audio/mpeg',ogg:'audio/ogg',oga:'audio/ogg',m4a:'audio/mp4',wav:'audio/wav',flac:'audio/flac',json:'application/json'};
+const mimeOf = n => MIME[(n.split('.').pop()||'').toLowerCase()] || 'application/octet-stream';
+
+function makeVFS(pairs){
+  const outboxes = pairs.map(p => p[0]).filter(n => /(^|\/)outbox\.json$/.test(n)).sort((a,b) => a.length - b.length);
+  if (!outboxes.length) throw new Error('outbox.json을 찾지 못했어요. 마스토돈 [데이터 내보내기]로 받은 파일이 맞는지 확인해 주세요.');
+  const base = outboxes[0].slice(0, -'outbox.json'.length);
+  const files = new Map(), byName = new Map(), urls = new Map();
+  for (const [n, get] of pairs) if (n.startsWith(base)) files.set(n.slice(base.length), get);
+  for (const k of files.keys()) { const b = k.split('/').pop(); if (!byName.has(b)) byName.set(b, k); }
+  const find = p => {
+    if (!p) return null; p = p.replace(/^\/+/, '');
+    if (files.has(p)) return p;
+    try { const d = decodeURIComponent(p); if (files.has(d)) return d; } catch(e){}
+    return byName.get(p.split('/').pop()) || null;
+  };
+  return {
+    find,
+    blob: k => files.get(k)(),
+    async text(p){ const k = find(p); if (!k) return null; return (await files.get(k)()).text(); },
+    url(p){ const k = find(p); if (!k) return Promise.resolve('');
+      if (!urls.has(k)) urls.set(k, files.get(k)().then(b => URL.createObjectURL(b)).catch(() => ''));
+      return urls.get(k); },
+    revoke(){ for (const pr of urls.values()) pr.then(u => u && URL.revokeObjectURL(u)); }
+  };
+}
+async function vfsFromZip(file){
+  if (typeof zip === 'undefined') throw new Error('zip 해제 라이브러리를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.');
+  zip.configure({useWebWorkers:false});
+  const reader = new zip.ZipReader(new zip.BlobReader(file));
+  const entries = await reader.getEntries();
+  return makeVFS(entries.filter(e => !e.directory).map(e => [e.filename, () => e.getData(new zip.BlobWriter(mimeOf(e.filename)))]));
+}
+function parseTar(buf){
+  const u8 = new Uint8Array(buf), dec = new TextDecoder(), out = [];
+  let off = 0, longName = null;
+  while (off + 512 <= u8.length){
+    const h = u8.subarray(off, off+512);
+    if (h[0] === 0 && h[100] === 0 && h[124] === 0) break;
+    const str = (a,b) => { const s = h.subarray(a,b); const z = s.indexOf(0); return dec.decode(z >= 0 ? s.subarray(0,z) : s); };
+    let name = str(0,100);
+    const size = parseInt(str(124,136).trim() || '0', 8) || 0;
+    const type = String.fromCharCode(h[156] || 48);
+    if (str(257,262) === 'ustar'){ const pre = str(345,500); if (pre) name = pre + '/' + name; }
+    off += 512;
+    const data = u8.subarray(off, off+size);
+    off += Math.ceil(size/512) * 512;
+    if (type === 'L'){ longName = dec.decode(data).replace(/\0[\s\S]*$/, ''); continue; }
+    if (type === 'x'){ const m = dec.decode(data).match(/\d+ path=([^\n]*)\n/); if (m) longName = m[1]; continue; }
+    if (type === 'g') continue;
+    if (longName){ name = longName; longName = null; }
+    if (type === '0' || type === '7') out.push([name.replace(/^\.\//,''), data]);
+  }
+  return out;
+}
+async function vfsFromTar(file, gz){
+  if (gz && typeof DecompressionStream === 'undefined') throw new Error('이 브라우저는 .tar.gz 해제를 지원하지 않아요. 최신 Chrome·Firefox·Safari에서 열거나 압축을 먼저 풀어 폴더로 선택해 주세요.');
+  const buf = gz ? await new Response(file.stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer() : await file.arrayBuffer();
+  return makeVFS(parseTar(buf).map(([n,d]) => [n, () => Promise.resolve(new Blob([d], {type:mimeOf(n)}))]));
+}
+function vfsFromFiles(list){
+  return makeVFS([...list].map(f => [(f.webkitRelativePath || f.name), () => Promise.resolve(f)]));
+}
+
+/* ---------- normalize ActivityPub export ---------- */
+const arr = v => v == null ? [] : Array.isArray(v) ? v : [v];
+function mediaPath(u){
+  if (!u) return null;
+  if (/^data:/.test(u)) return u;
+  u = String(u).split('?')[0];
+  const i = u.indexOf('media_attachments/');
+  if (i >= 0) return u.slice(i);
+  if (/^https?:/i.test(u)) return u;
+  return u.replace(/^\/+/, '');
+}
+function visibilityOf(a){
+  const to = arr(a.to), cc = arr(a.cc);
+  if (to.some(x => PUBLIC.includes(x))) return 'public';
+  if (cc.some(x => PUBLIC.includes(x))) return 'unlisted';
+  if (to.some(x => /\/followers$/.test(x))) return 'private';
+  return 'direct';
+}
+const idFrom = (u, fb) => { const m = String(u||'').match(/statuses\/([^/?#]+)/); return m ? m[1] : String(fb); };
+function emojiMap(tags){
+  const m = {};
+  for (const t of arr(tags)) if (t && t.type === 'Emoji' && t.name && t.icon) m[t.name] = mediaPath(t.icon.url || t.icon);
+  return m;
+}
+function normalize(actorJson, outbox, likesJson, bookmarksJson){
+  const items = arr(outbox && outbox.orderedItems);
+  const a = actorJson || {};
+  const actorId = a.id || (items[0] && items[0].actor) || '';
+  let host = ''; try { host = new URL(actorId).host; } catch(e){}
+  const actor = {
+    id: actorId, name: a.name || a.preferredUsername || '내 계정', username: a.preferredUsername || '',
+    handle: a.preferredUsername ? `@${a.preferredUsername}${host ? '@' + host : ''}` : '',
+    summary: a.summary || '', avatar: mediaPath(a.icon && (a.icon.url || a.icon)), header: mediaPath(a.image && (a.image.url || a.image)),
+    fields: arr(a.attachment).filter(f => f && f.type === 'PropertyValue').map(f => ({name:f.name || '', value:f.value || ''})),
+    published: a.published || null, url: a.url || actorId, emojis: emojiMap(a.tag)
+  };
+  const statuses = [];
+  items.forEach((it, i) => {
+    if (!it) return;
+    if (it.type === 'Announce'){
+      const target = typeof it.object === 'string' ? it.object : (it.object && (it.object.id || it.object.url)) || '';
+      statuses.push({id: idFrom(it.id, 'b' + i), kind:'boost', published: it.published, boostOf: target, visibility: visibilityOf(it), tags:[], attachments:[]});
+      return;
+    }
+    if (it.type !== 'Create' || !it.object || typeof it.object !== 'object') return;
+    const o = it.object;
+    const content = o.content || Object.values(o.contentMap || {})[0] || '';
+    const tags = arr(o.tag).filter(t => t && t.type === 'Hashtag' && t.name).map(t => t.name.replace(/^#/, '').toLowerCase());
+    const attachments = arr(o.attachment).filter(Boolean).map(x => {
+      const mt = x.mediaType || mimeOf(String(x.url || ''));
+      return {type: mt.startsWith('image/') ? 'image' : mt.startsWith('video/') ? 'video' : mt.startsWith('audio/') ? 'audio' : 'other',
+        path: mediaPath(x.url && (x.url.href || x.url)), alt: x.name || '', w: x.width || 0, h: x.height || 0, mime: mt};
+    }).filter(x => x.path);
+    let poll = null;
+    if (o.type === 'Question' && (o.oneOf || o.anyOf)){
+      const opts = arr(o.oneOf || o.anyOf).map(x => ({name: x.name || '', count: (x.replies && x.replies.totalItems) || 0}));
+      const sum = opts.reduce((s,x) => s + x.count, 0);
+      poll = {options: opts, multiple: !!o.anyOf, voters: o.votersCount || sum, total: sum, endTime: o.endTime || o.closed || null, closed: !!o.closed || (o.endTime && new Date(o.endTime) < new Date())};
+    }
+    statuses.push({
+      id: idFrom(o.id, 'n' + i), kind:'post', url: o.url || o.id || '', published: o.published || it.published,
+      content, summary: o.summary || '', sensitive: !!o.sensitive, visibility: visibilityOf(o.to ? o : it),
+      inReplyTo: o.inReplyTo || null, tags, attachments, poll, emojis: emojiMap(o.tag),
+      lang: Object.keys(o.contentMap || {})[0] || ''
+    });
+  });
+  const ids = new Set(statuses.map(s => s.id));
+  for (const s of statuses){
+    if (s.inReplyTo){ const rid = idFrom(s.inReplyTo, ''); if (rid && ids.has(rid) && (!host || String(s.inReplyTo).includes(host))) s.inReplyToId = rid; }
+  }
+  const urlList = j => arr(j && j.orderedItems).map(x => typeof x === 'string' ? x : (x && (x.id || x.url))).filter(Boolean);
+  return {actor, statuses, likes: urlList(likesJson).reverse(), bookmarks: urlList(bookmarksJson).reverse()};
+}
+
+/* ---------- sanitize post HTML ---------- */
+const ALLOWED = new Set(['P','BR','A','SPAN','STRONG','EM','B','I','U','DEL','S','CODE','PRE','BLOCKQUOTE','UL','OL','LI','SUB','SUP','H1','H2','H3','H4','H5','H6']);
+const KEEP_CLASS = /^(invisible|ellipsis|mention|hashtag|h-card|u-url)$/;
+function sanitize(html, emojis){
+  const doc = new DOMParser().parseFromString('<div>' + (html || '') + '</div>', 'text/html');
+  const root = doc.body.firstChild;
+  (function walk(node){
+    for (const el of [...node.children]){
+      if (/^(SCRIPT|STYLE|IFRAME|OBJECT|EMBED|FORM|INPUT|TEMPLATE)$/.test(el.tagName)){ el.remove(); continue; }
+      walk(el);
+      if (!ALLOWED.has(el.tagName)){ el.replaceWith(...el.childNodes); continue; }
+      for (const at of [...el.attributes]){
+        const n = at.name.toLowerCase();
+        if (n === 'href' && el.tagName === 'A' && /^https?:/i.test(at.value)) continue;
+        if (n === 'class'){ const c = at.value.split(/\s+/).filter(x => KEEP_CLASS.test(x)).join(' '); if (c){ el.setAttribute('class', c); continue; } }
+        el.removeAttribute(at.name);
+      }
+      if (el.tagName === 'A'){ el.setAttribute('target','_blank'); el.setAttribute('rel','noopener noreferrer'); }
+    }
+  })(root);
+  if (emojis && Object.keys(emojis).length){
+    const tw = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT); const texts = [];
+    while (tw.nextNode()) texts.push(tw.currentNode);
+    for (const t of texts){
+      if (!/:[\w+-]+:/.test(t.data)) continue;
+      const frag = doc.createDocumentFragment();
+      t.data.split(/(:[\w+-]+:)/).forEach(part => {
+        if (emojis[part]){ const img = doc.createElement('img'); img.className = 'custom-emoji'; img.alt = part; img.title = part; img.setAttribute('data-media', emojis[part]); frag.append(img); }
+        else if (part) frag.append(doc.createTextNode(part));
+      });
+      t.replaceWith(frag);
+    }
+  }
+  return root.innerHTML;
+}
+const plain = html => { const d = new DOMParser().parseFromString('<div>' + (html||'') + '</div>', 'text/html'); return d.body.textContent || ''; };
+
+/* ---------- media resolution ---------- */
+let VFS = null;
+function resolveMedia(p){
+  if (!p) return Promise.resolve('');
+  if (/^(data:|blob:|https?:)/i.test(p)) return Promise.resolve(p);
+  if (EMBED) return Promise.resolve(p.split('/').map(encodeURIComponent).join('/'));
+  return VFS ? VFS.url(p) : Promise.resolve('');
+}
+function hydrate(root){
+  root.querySelectorAll('[data-media]').forEach(el => {
+    const p = el.getAttribute('data-media'); el.removeAttribute('data-media');
+    resolveMedia(p).then(u => { if (u) el.src = u; else if (el.tagName === 'IMG') el.style.visibility = 'hidden'; });
+  });
+  root.querySelectorAll('[data-media-bg]').forEach(el => {
+    const p = el.getAttribute('data-media-bg'); el.removeAttribute('data-media-bg');
+    resolveMedia(p).then(u => { if (u) el.style.backgroundImage = `url("${u}")`; });
+  });
+}
+
+/* ---------- sample ---------- */
+function svgData(svg){ return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }
+function scene(sky1, sky2, hill1, hill2, sun){
+  return svgData(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky1}"/><stop offset="1" stop-color="${sky2}"/></linearGradient></defs><rect width="800" height="520" fill="url(#g)"/><circle cx="600" cy="170" r="62" fill="${sun}"/><path d="M0 360 Q180 250 360 330 T800 300 V520 H0z" fill="${hill1}"/><path d="M0 430 Q220 350 450 420 T800 400 V520 H0z" fill="${hill2}"/></svg>`);
+}
+function buildSample(){
+  const host = 'mastodon.example', me = `https://${host}/users/haneul`;
+  const avatar = svgData('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><rect width="120" height="120" fill="#6364ff"/><circle cx="60" cy="48" r="22" fill="#fff" opacity=".92"/><path d="M20 112c6-26 22-38 40-38s34 12 40 38z" fill="#fff" opacity=".92"/></svg>');
+  const header = scene('#f7c873','#f39b6d','#b5654a','#7d3f35','#fff1c9');
+  const T = (d) => new Date(Date.now() - d*3600*1000).toISOString();
+  const st = (id, h, content, extra={}) => Object.assign({id, kind:'post', url:`https://${host}/@haneul/${id}`, published:T(h), content, summary:'', sensitive:false, visibility:'public', inReplyTo:null, tags:[], attachments:[], poll:null, emojis:{}}, extra);
+  const tag = t => `<a href="https://${host}/tags/${encodeURIComponent(t)}" class="mention hashtag" rel="tag">#<span>${t}</span></a>`;
+  const statuses = [
+    st('9001', 3, `<p>가을 산책 사진 몇 장. 은행잎이 거의 다 노랗게 됐어요 ${tag('산책')} ${tag('가을')}</p>`, {tags:['산책','가을'], attachments:[
+      {type:'image', path: scene('#9ed0f0','#e8f3fb','#e2b93b','#b07d1f','#ffffff'), alt:'노랗게 물든 은행나무 언덕과 맑은 하늘', w:800, h:520},
+      {type:'image', path: scene('#f3b07a','#f8dcb8','#c46a3c','#8a3d25','#fff4d6'), alt:'해 질 무렵 붉게 물든 산등성이', w:800, h:520}]}),
+    st('8990', 20, '<p>마스토돈 아카이브 정리하는 중인데 생각보다 글이 많네요. 스레드로 메모 남겨둘게요 🧵</p>'),
+    st('8991', 19.9, '<p>1. 내보내기는 환경설정 → 가져오기 및 내보내기 → 데이터 내보내기에서 요청해요. 준비되면 메일로 알려줘요.</p>', {inReplyTo:`${me}/statuses/8990`, inReplyToId:'8990'}),
+    st('8992', 19.8, '<p>2. 받은 zip 파일을 이 페이지에 끌어다 놓으면 바로 열려요. 파일은 브라우저 밖으로 나가지 않아요.</p>', {inReplyTo:`${me}/statuses/8991`, inReplyToId:'8991'}),
+    st('8980', 30, '<p>결말에서 주인공이 결국 등대로 돌아가요. 생각보다 조용한 엔딩이라 오히려 좋았음 ' + tag('영화') + '</p>', {summary:'영화 〈등대지기〉 결말 스포일러', tags:['영화']}),
+    st('8970', 52, '<p>이번 주말에 뭐 할까요?</p>', {poll:{options:[{name:'근교 등산',count:12},{name:'집에서 책 읽기',count:21},{name:'미술관 전시',count:9}], multiple:false, voters:42, total:42, endTime:T(28), closed:true}}),
+    {id:'8960', kind:'boost', published:T(60), boostOf:'https://social.example/@dalbit/113402881190023117', visibility:'public', tags:[], attachments:[]},
+    st('8950', 75, `<p><span class="h-card"><a href="https://other.example/@hana" class="u-url mention">@<span>hana</span></a></span> 저도 그 카페 가봤어요! 창가 자리에서 보는 노을이 좋더라고요</p>`, {inReplyTo:'https://other.example/users/hana/statuses/1129', visibility:'unlisted'}),
+    st('8940', 98, `<p>오늘의 커피: 에티오피아 예가체프. 산미가 좋다 ☕ ${tag('커피')}</p>`, {tags:['커피'], visibility:'unlisted'}),
+    st('8930', 140, '<p>팔로워분들께만: 다음 주 토요일 오후에 작은 독서 모임 해요. 장소는 DM으로 알려드릴게요.</p>', {visibility:'private'}),
+    st('8920', 141, '<p><span class="h-card"><a href="https://other.example/@hana" class="u-url mention">@<span>hana</span></a></span> 모임 장소는 역 앞 2층 카페예요.</p>', {visibility:'direct', inReplyTo:null}),
+    st('8100', 24*380, `<p>첫 툿! 책이랑 산책, 커피 이야기를 주로 올릴 것 같아요. 잘 부탁드려요 ${tag('introduction')}</p>`, {tags:['introduction']})
+  ];
+  return {
+    sample:true,
+    actor:{id:me, name:'하늘 (예시)', username:'haneul', handle:`@haneul@${host}`, summary:'<p>책, 산책, 커피. 가끔 사진을 찍어요.</p><p>이 계정은 뷰어 미리보기를 위한 예시예요.</p>',
+      avatar, header, fields:[{name:'블로그', value:'<a href="https://blog.example" rel="me">blog.example</a>'},{name:'사는 곳', value:'충청남도'}], published:new Date(Date.now()-24*3600*1000*400).toISOString(), url:`https://${host}/@haneul`, emojis:{}},
+    statuses,
+    likes:['https://social.example/@dalbit/113402881190023117','https://other.example/@hana/113390112233445566','https://mstdn.example/@coffee_note/113300998877665544'],
+    bookmarks:['https://other.example/@hana/113201234567890123','https://social.example/@reader/113100000000000042']
+  };
+}
+
+/* ---------- state ---------- */
+const S = {
+  data:null, byId:new Map(), children:new Map(), stats:null,
+  tab:'posts', q:'', tag:null, year:null, sort:'new',
+  vis:{public:true, unlisted:true, private:true, direct:false},
+  list:[], shown:0, listScroll:0, sideCollapsed:true
+};
+const TABS = [
+  {id:'posts', label:'게시물', icon:'posts'}, {id:'replies', label:'게시물과 답글', icon:'replies'},
+  {id:'media', label:'미디어', icon:'media'}, {id:'likes', label:'좋아요', icon:'star'}, {id:'bookmarks', label:'북마크', icon:'bookmark'}
+];
+
+function setData(d){
+  S.data = d; S.byId = new Map(); S.children = new Map();
+  for (const s of d.statuses){
+    S.byId.set(s.id, s);
+    if (s.inReplyToId){ if (!S.children.has(s.inReplyToId)) S.children.set(s.inReplyToId, []); S.children.get(s.inReplyToId).push(s); }
+    s._t = +new Date(s.published) || 0;
+  }
+  S.tag = null; S.q = ''; S.year = null;
+  const st = {posts:0, replies:0, boosts:0, media:0, first:null, last:null, tags:new Map(), years:new Map(), vis:{public:0,unlisted:0,private:0,direct:0}};
+  for (const s of d.statuses){
+    if (s.kind === 'boost') st.boosts++; else if (s.inReplyTo && !s.inReplyToId) st.replies++; else st.posts++;
+    st.media += s.attachments.length;
+    st.vis[s.visibility] = (st.vis[s.visibility]||0) + 1;
+    if (s._t){ if (!st.first || s._t < st.first) st.first = s._t; if (!st.last || s._t > st.last) st.last = s._t;
+      const y = new Date(s._t).getFullYear(); st.years.set(y, (st.years.get(y)||0) + 1); }
+    for (const t of s.tags) st.tags.set(t, (st.tags.get(t)||0) + 1);
+  }
+  S.stats = st;
+  renderLeft(); renderRight(); renderBanner();
+  $('#search-input').value = '';
+  route(true);
+}
+
+/* ---------- filtering ---------- */
+function textOf(s){
+  if (s._text == null) s._text = (plain(s.content) + ' ' + plain(s.summary) + ' ' + (s.poll ? s.poll.options.map(o=>o.name).join(' ') : '') + ' ' + s.attachments.map(a=>a.alt).join(' ') + ' ' + (s.boostOf||'')).toLowerCase();
+  return s._text;
+}
+function filtered(){
+  const q = S.q.trim().toLowerCase();
+  let out = S.data.statuses.filter(s => {
+    if (!S.vis[s.visibility]) return false;
+    if (S.tab === 'posts' && s.kind === 'post' && s.inReplyTo && !s.inReplyToId) return false;
+    if (S.tab === 'media' && !s.attachments.some(a => a.type !== 'other')) return false;
+    if (S.tag && !s.tags.includes(S.tag)) return false;
+    if (S.year && new Date(s._t).getFullYear() !== S.year) return false;
+    if (q && !q.split(/\s+/).every(w => textOf(s).includes(w))) return false;
+    return true;
+  });
+  out.sort((a,b) => S.sort === 'new' ? b._t - a._t : a._t - b._t);
+  return out;
+}
+function filteredLinks(){
+  const q = S.q.trim().toLowerCase();
+  let l = S.tab === 'likes' ? S.data.likes : S.data.bookmarks;
+  if (q) l = l.filter(u => u.toLowerCase().includes(q));
+  return S.sort === 'new' ? l : [...l].reverse();
+}
+
+/* ---------- rendering: statuses ---------- */
+function visBadge(v){ const x = VIS[v] || VIS.public; return `<span title="${x.label}" aria-label="${x.label}">${icon(x.icon)}</span>`; }
+function gallery(s){
+  const vis = s.attachments.filter(a => a.type === 'image' || a.type === 'video');
+  let h = '';
+  if (vis.length){
+    const n = Math.min(vis.length, 4);
+    let ratio = '';
+    if (n === 1 && vis[0].w && vis[0].h){ const r = Math.max(.6, Math.min(2.2, vis[0].w / vis[0].h)); ratio = ` style="aspect-ratio:${r.toFixed(3)}"`; }
+    h += `<div class="gallery n${n}${s.sensitive ? ' blur' : ''}"${ratio}>`;
+    if (s.sensitive) h += `<button class="sens" data-act="unblur">민감한 콘텐츠<small>눌러서 보기</small></button>`;
+    vis.slice(0,4).forEach((a, i) => {
+      h += `<button class="gi" data-act="lightbox" data-sid="${esc(s.id)}" data-idx="${i}" aria-label="${esc(a.alt || (a.type === 'video' ? '동영상' : '이미지'))} 크게 보기">`;
+      h += a.type === 'video' ? `<video muted playsinline preload="metadata" data-media="${esc(a.path)}"></video><span class="play">${icon('play')}</span>`
+        : `<img loading="lazy" alt="${esc(a.alt)}" data-media="${esc(a.path)}">`;
+      if (a.alt) h += '<span class="badge">ALT</span>';
+      h += '</button>';
+    });
+    h += '</div>';
+  }
+  for (const a of s.attachments.filter(a => a.type === 'audio')) h += `<audio class="audio-att" controls preload="none" data-media="${esc(a.path)}" title="${esc(a.alt)}"></audio>`;
+  for (const a of s.attachments.filter(a => a.type === 'other')) h += `<div class="file-att">${icon('file')}<span>${esc(a.path.split('/').pop())}</span></div>`;
+  return h;
+}
+function pollHTML(p){
+  const max = Math.max(...p.options.map(o => o.count), 0);
+  let h = '<div class="poll">';
+  for (const o of p.options){
+    const pct = p.total ? Math.round(o.count / (p.multiple ? Math.max(p.voters,1) : p.total) * 100) : 0;
+    h += `<div class="poll-opt${o.count === max && max > 0 ? ' lead' : ''}"><span class="fill" style="width:${pct}%"></span><span class="pct">${pct}%</span><span>${esc(o.name)}</span></div>`;
+  }
+  h += `<div class="poll-foot">${p.voters.toLocaleString('ko-KR')}명 투표 · ${p.closed ? '마감됨' : (p.endTime ? fmtFull(p.endTime) + ' 마감' : '진행 중')}${p.multiple ? ' · 복수 선택' : ''}</div></div>`;
+  return h;
+}
+function shortUrl(u){ try { const x = new URL(u); return x.host + x.pathname; } catch(e){ return u; } }
+function acctFromUrl(u){
+  try { const x = new URL(u); let m = x.pathname.match(/^\/@([^/]+)/) || x.pathname.match(/^\/users\/([^/]+)/);
+    return m ? `@${m[1]}@${x.host}` : x.host; } catch(e){ return u; }
+}
+function statusHTML(s, opt={}){
+  const A = S.data.actor;
+  const cls = ['status']; if (opt.focused) cls.push('focused'); if (opt.hasNext) cls.push('has-next'); if (opt.hasPrev) cls.push('has-prev');
+  const time = `<div class="st-time"><a href="#post-${esc(s.id)}" title="${esc(fmtFull(s.published))}"><time datetime="${esc(s.published)}">${esc(relTime(s.published))}</time></a>${visBadge(s.visibility)}</div>`;
+  const head = `<div class="st-head"><img class="st-avatar" alt="" data-media="${esc(A.avatar || '')}"><div class="st-names"><bdi class="dn">${sanitize(esc(A.name), A.emojis)}</bdi><span class="acct">${esc(A.handle)}</span></div>${opt.focused ? '' : time}</div>`;
+  if (s.kind === 'boost'){
+    return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}" data-kind="boost"><div class="prepend">${icon('boost')}<span>${sanitize(esc(A.name), A.emojis)}님이 부스트했습니다</span></div>
+      ${head}<div class="boost-card"><span class="bi">${icon('boost')}</span><div><a href="${esc(s.boostOf)}" target="_blank" rel="noopener noreferrer">${esc(acctFromUrl(s.boostOf))} 님의 게시물 ${icon('ext')}</a><p>아카이브에는 부스트한 글의 본문이 들어 있지 않아 원래 주소로 연결해요.</p></div></div></article>`;
+  }
+  let body = '';
+  if (s.inReplyTo && !s.inReplyToId) body += `<div class="reply-to">${icon('reply')}<span>답글:</span><a href="${esc(s.inReplyTo)}" target="_blank" rel="noopener noreferrer">${esc(acctFromUrl(s.inReplyTo))}</a></div>`;
+  else if (s.inReplyToId && !opt.hasPrev) body += `<div class="reply-to">${icon('reply')}<a href="#post-${esc(s.inReplyToId)}">내 게시물에 이어서 쓴 글</a></div>`;
+  const inner = `<div class="content" lang="${esc(s.lang||'')}">${sanitize(s.content, s.emojis)}</div>${s.poll ? pollHTML(s.poll) : ''}${gallery(s)}`;
+  if (s.summary) body += `<div class="cw"><p>${sanitize(esc(s.summary), s.emojis)}</p><button class="cw-btn" data-act="cw" aria-expanded="false">더 보기</button></div><div class="cw-body" hidden style="display:flex;flex-direction:column;gap:10px">${inner}</div>`;
+  else body += inner;
+  let foot;
+  if (opt.focused){
+    foot = `<div class="focus-meta"><time datetime="${esc(s.published)}">${esc(fmtFull(s.published))}</time><span>·</span>${visBadge(s.visibility)}<span>${esc((VIS[s.visibility]||VIS.public).label)}</span>${s.url ? `<span>·</span><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">원래 주소 ${icon('ext')}</a>` : ''}</div>`;
+  } else {
+    const canBoost = s.visibility === 'public' || s.visibility === 'unlisted';
+    foot = `<div class="actions" aria-hidden="true"><span>${icon('reply')}${(S.children.get(s.id)||[]).length || ''}</span><span class="${canBoost ? '' : 'off'}">${icon(canBoost ? 'boost' : 'lock')}</span><span>${icon('star')}</span><span>${icon('bookmark')}</span><span>${icon('more')}</span></div>`;
+  }
+  return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}">${head}${body}${foot}</article>`;
+}
+
+/* ---------- rendering: columns ---------- */
+function renderProfile(){
+  const A = S.data.actor, st = S.stats;
+  const fields = A.fields.length ? `<dl class="fields">${A.fields.map(f => `<div><dt>${sanitize(esc(f.name), A.emojis)}</dt><dd>${sanitize(f.value, A.emojis)}</dd></div>`).join('')}</dl>` : '';
+  $('#profile').innerHTML = `<div class="account-header">
+    <div class="hdr" data-media-bg="${esc(A.header || '')}"></div>
+    <div class="ah-bar"><img class="ah-avatar" alt="" data-media="${esc(A.avatar || '')}">${A.url ? `<a class="btn ghost" href="${esc(A.url)}" target="_blank" rel="noopener noreferrer">원래 프로필 ${icon('ext')}</a>` : ''}</div>
+    <div class="ah-body"><div class="ah-names"><h1>${sanitize(esc(A.name), A.emojis)}</h1><span class="acct">${esc(A.handle)}</span></div>
+    ${A.summary ? `<div class="ah-bio content">${sanitize(A.summary, A.emojis)}</div>` : ''}${fields}
+    <div class="ah-meta"><span><b>${(st.posts + st.replies).toLocaleString('ko-KR')}</b> 게시물</span><span><b>${st.boosts.toLocaleString('ko-KR')}</b> 부스트</span><span><b>${st.media.toLocaleString('ko-KR')}</b> 미디어</span>${A.published ? `<span>${esc(fmtDay(A.published))} 가입</span>` : ''}</div></div></div>`;
+  hydrate($('#profile'));
+}
+function renderTabs(){
+  $('#tabs').innerHTML = TABS.map(t => `<a href="#${t.id}"${S.tab === t.id ? ' aria-current="page"' : ''}>${t.label}</a>`).join('');
+  document.querySelectorAll('#nav a[data-tab]').forEach(a => { if (a.dataset.tab === S.tab) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
+}
+let io = null;
+function refreshList(){
+  const feed = $('#feed');
+  const isLinks = S.tab === 'likes' || S.tab === 'bookmarks';
+  S.list = isLinks ? filteredLinks() : filtered();
+  if (S.tab === 'media') S.list = S.list.flatMap(s => s.attachments.filter(a => a.type === 'image' || a.type === 'video').map((a, i) => ({s, a, i})));
+  S.shown = 0; feed.innerHTML = '';
+  feed.className = S.tab === 'media' ? 'media-grid' : '';
+  const notes = [];
+  if (S.tag) notes.push(`#${esc(S.tag)}`);
+  if (S.year) notes.push(`${S.year}년`);
+  if (S.q.trim()) notes.push(`“${esc(S.q.trim())}”`);
+  const hidden = Object.entries(S.vis).filter(([k,v]) => !v).map(([k]) => VIS[k].label);
+  const fn = $('#filter-note');
+  if (notes.length){ fn.hidden = false; fn.innerHTML = `<span>${notes.join(' · ')} · ${S.list.length.toLocaleString('ko-KR')}개</span><button class="linkbtn" data-act="clear">필터 지우기</button>`; }
+  else if (hidden.length && !isLinks){ fn.hidden = false; fn.innerHTML = `<span>${esc(hidden.join(', '))} 글은 숨겨져 있어요</span><button class="linkbtn" data-act="showall">모두 보기</button>`; }
+  else fn.hidden = true;
+  if (isLinks && S.tab === 'likes' && !S.data.likes.length || isLinks && S.tab === 'bookmarks' && !S.data.bookmarks.length){
+    feed.innerHTML = `<div class="empty">아카이브에 ${S.tab === 'likes' ? '좋아요' : '북마크'} 목록이 없어요.</div>`; return;
+  }
+  if (!S.list.length){ feed.innerHTML = '<div class="empty">조건에 맞는 게시물이 없어요.</div>'; return; }
+  if (isLinks) feed.insertAdjacentHTML('beforeend', `<div class="filter-note"><span>아카이브에는 ${S.tab === 'likes' ? '좋아요한' : '북마크한'} 글의 주소만 저장돼요. 눌러서 원래 글을 열어 보세요.</span></div>`);
+  renderMore();
+}
+function renderMore(){
+  const feed = $('#feed'), step = S.tab === 'media' ? 60 : 30;
+  const slice = S.list.slice(S.shown, S.shown + step);
+  if (!slice.length) return;
+  const tmp = document.createElement('div');
+  if (S.tab === 'media') tmp.innerHTML = slice.map(({s, a, i}) => `<button class="gi" data-act="lightbox" data-sid="${esc(s.id)}" data-idx="${i}" aria-label="${esc(a.alt || '미디어')} 크게 보기">${a.type === 'video' ? `<video muted playsinline preload="metadata" data-media="${esc(a.path)}"></video><span class="play">${icon('play')}</span>` : `<img loading="lazy" alt="${esc(a.alt)}" data-media="${esc(a.path)}">`}</button>`).join('');
+  else if (S.tab === 'likes' || S.tab === 'bookmarks') tmp.innerHTML = slice.map(u => `<a class="linkcard" href="${esc(u)}" target="_blank" rel="noopener noreferrer"><span class="bi">${icon(S.tab === 'likes' ? 'star' : 'bookmark')}</span><div><b>${esc(acctFromUrl(u))}</b><span>${esc(shortUrl(u))}</span></div></a>`).join('');
+  else tmp.innerHTML = slice.map(s => statusHTML(s)).join('');
+  hydrate(tmp);
+  feed.append(...tmp.childNodes);
+  S.shown += slice.length;
+  requestAnimationFrame(() => { const r = $('#sentinel').getBoundingClientRect(); if (r.top < innerHeight + 800 && S.shown < S.list.length && !$('#list-view').hidden) renderMore(); });
+  $('#sentinel').textContent = S.shown < S.list.length ? `${S.shown.toLocaleString('ko-KR')} / ${S.list.length.toLocaleString('ko-KR')} 불러옴` : '';
+}
+
+function openPost(id){
+  const s = S.byId.get(id);
+  const dv = $('#detail-view');
+  if (!s){ dv.innerHTML = `<div class="col-head"><button data-act="back">${icon('back')}뒤로</button></div><div class="empty">이 아카이브에서 게시물을 찾지 못했어요.</div>`; return; }
+  const anc = []; let cur = s;
+  while (cur.inReplyToId && S.byId.has(cur.inReplyToId) && anc.length < 200){ cur = S.byId.get(cur.inReplyToId); anc.unshift(cur); }
+  const desc = [];
+  (function walk(p, depth){ for (const c of (S.children.get(p) || []).sort((a,b) => a._t - b._t)){ desc.push(c); if (depth < 200) walk(c.id, depth+1); } })(s.id, 0);
+  let h = `<div class="col-head"><button data-act="back">${icon('back')}뒤로</button><span>게시물</span>${panelBtn()}</div>`;
+  anc.forEach((a, i) => h += statusHTML(a, {hasNext:true, hasPrev:i > 0}));
+  h += statusHTML(s, {focused:true, hasPrev:anc.length > 0});
+  desc.forEach(d => h += statusHTML(d));
+  dv.innerHTML = h;
+  hydrate(dv);
+}
+
+function route(fresh){
+  const h = decodeURIComponent(location.hash.slice(1));
+  const lv = $('#list-view'), dv = $('#detail-view');
+  if (h.startsWith('post-')){
+    if (!lv.hidden) S.listScroll = window.scrollY;
+    lv.hidden = true; dv.hidden = false;
+    openPost(h.slice(5));
+    window.scrollTo(0, 0);
+    const f = dv.querySelector('.focused'); if (f && f.previousElementSibling && f.previousElementSibling.classList.contains('status')) f.scrollIntoView({block:'start'});
+    return;
+  }
+  const tab = TABS.some(t => t.id === h) ? h : 'posts';
+  const changed = tab !== S.tab || fresh;
+  S.tab = tab;
+  dv.hidden = true; dv.innerHTML = '';
+  const wasHidden = lv.hidden;
+  lv.hidden = false;
+  if (fresh) renderProfile();
+  renderTabs();
+  if (changed || !$('#feed').childElementCount) refreshList();
+  if (wasHidden && !changed) window.scrollTo(0, S.listScroll);
+}
+
+/* ---------- side panels ---------- */
+function renderLeft(){
+  const st = S.stats;
+  const years = [...st.years.entries()].sort((a,b) => b[0] - a[0]);
+  const ymax = Math.max(1, ...years.map(y => y[1]));
+  const tags = [...st.tags.entries()].sort((a,b) => b[1] - a[1]).slice(0, 14);
+  $('#vis-chips').innerHTML = Object.entries(VIS).map(([k, v]) => `<button class="chip" data-vis="${k}" aria-pressed="${S.vis[k]}">${icon(v.icon)}${v.label}<span class="muted">${st.vis[k] || 0}</span></button>`).join('');
+  $('#stats').innerHTML = `
+    <div><dt>게시물</dt><dd>${st.posts.toLocaleString('ko-KR')}</dd></div><div><dt>답글</dt><dd>${st.replies.toLocaleString('ko-KR')}</dd></div>
+    <div><dt>부스트</dt><dd>${st.boosts.toLocaleString('ko-KR')}</dd></div><div><dt>미디어</dt><dd>${st.media.toLocaleString('ko-KR')}</dd></div>
+    <div><dt>첫 게시물</dt><dd class="date">${st.first ? esc(fmtDay(st.first)) : '-'}</dd></div><div><dt>마지막 게시물</dt><dd class="date">${st.last ? esc(fmtDay(st.last)) : '-'}</dd></div>`;
+  $('#years').innerHTML = years.map(([y, n]) => `<button data-year="${y}" aria-pressed="${S.year === y}"><span>${y}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(3, n/ymax*100)}%"></span></span><span>${n.toLocaleString('ko-KR')}</span></button>`).join('');
+  $('#tagcloud').innerHTML = tags.length ? tags.map(([t, n]) => `<button class="tagchip" data-tag="${esc(t)}">#${esc(t)}<b>${n}</b></button>`).join('') : '<p class="small">해시태그가 없어요.</p>';
+  const loaded = !S.data.sample;
+  document.querySelectorAll('[data-act="export"]').forEach(b => b.disabled = !loaded || !!EMBED);
+}
+function renderRight(){
+  const c = {posts:'', replies:'', media:S.stats.media, likes:S.data.likes.length, bookmarks:S.data.bookmarks.length};
+  $('#nav').innerHTML = TABS.map(t => `<a href="#${t.id}" data-tab="${t.id}">${icon(t.icon)}<span>${t.label}</span>${c[t.id] !== '' && c[t.id] != null ? `<span class="count">${Number(c[t.id]).toLocaleString('ko-KR')}</span>` : ''}</a>`).join('')
+    + (EMBED ? '' : `<hr><button data-act="open">${icon('folder')}<span>아카이브 열기</span></button><button data-act="export"${S.data.sample ? ' disabled' : ''}>${icon('download')}<span>HTML로 내보내기</span></button>`);
+}
+function renderBanner(){
+  const b = $('#banner');
+  if (EMBED){ b.hidden = true; return; }
+  if (S.data.sample){ b.hidden = false; b.innerHTML = `<p>지금은 <b>예시 데이터</b>예요. 마스토돈에서 받은 아카이브 zip을 이 화면에 끌어다 놓거나 직접 선택하세요.</p><button class="btn" data-act="open">${icon('folder')}아카이브 열기</button>`; }
+  else b.hidden = true;
+}
+
+/* ---------- left panel toggle ---------- */
+function leftHidden(){ return document.body.classList.contains('left-hidden'); }
+function panelBtn(){ const h = leftHidden(); return `<button class="panel-btn" data-act="toggle-left" aria-pressed="${!h}" title="${h ? '왼쪽 패널 보이기' : '왼쪽 패널 숨기기'}" aria-label="${h ? '왼쪽 패널 보이기' : '왼쪽 패널 숨기기'}">${icon('sidebar')}</button>`; }
+function setLeftHidden(h){
+  document.body.classList.toggle('left-hidden', h);
+  try { localStorage.setItem('mav-left-hidden', h ? '1' : '0'); } catch(e){}
+  document.querySelectorAll('.panel-btn').forEach(b => b.outerHTML = panelBtn());
+}
+
+/* ---------- lightbox ---------- */
+const LB = {items:[], i:0};
+function openLightbox(sid, idx){
+  const s = S.byId.get(sid); if (!s) return;
+  LB.items = s.attachments.filter(a => a.type === 'image' || a.type === 'video'); LB.i = idx; LB.sid = sid;
+  $('#lb').hidden = false; showLB(); $('#lb .lb-close').focus();
+}
+function showLB(){
+  const a = LB.items[LB.i], stage = $('#lb .lb-stage');
+  stage.innerHTML = a.type === 'video' ? `<video controls autoplay playsinline data-media="${esc(a.path)}"></video>` : `<img alt="${esc(a.alt)}" data-media="${esc(a.path)}">`;
+  hydrate(stage);
+  $('#lb .lb-cap').innerHTML = `${a.alt ? esc(a.alt) + '<br>' : ''}<a href="#post-${esc(LB.sid)}" data-act="lbpost">게시물 보기</a>${LB.items.length > 1 ? ` · ${LB.i+1} / ${LB.items.length}` : ''}`;
+  $('#lb .lb-prev').hidden = $('#lb .lb-next').hidden = LB.items.length < 2;
+}
+function closeLB(){ $('#lb').hidden = true; $('#lb .lb-stage').innerHTML = ''; }
+
+/* ---------- loading ---------- */
+function setStatus(msg, err){ const el = $('#load-status'); el.className = err ? 'err' : 'small'; el.textContent = msg || ''; }
+async function loadInput(files){
+  try {
+    setStatus('아카이브를 여는 중이에요…');
+    let vfs;
+    if (files.length > 1 || (files[0] && files[0].webkitRelativePath)) vfs = vfsFromFiles(files);
+    else {
+      const f = files[0], n = f.name.toLowerCase();
+      if (/\.(tar\.gz|tgz)$/.test(n)) vfs = await vfsFromTar(f, true);
+      else if (/\.tar$/.test(n)) vfs = await vfsFromTar(f, false);
+      else if (/\.json$/.test(n)) vfs = vfsFromFiles(files);
+      else vfs = await vfsFromZip(f);
+    }
+    setStatus('게시물을 읽는 중이에요…');
+    const j = async p => { const t = await vfs.text(p); if (t == null) return null; try { return JSON.parse(t); } catch(e){ return null; } };
+    const outbox = await j('outbox.json');
+    if (!outbox) throw new Error('outbox.json을 읽지 못했어요. 파일이 손상되었을 수 있어요.');
+    const data = normalize(await j('actor.json'), outbox, await j('likes.json'), await j('bookmarks.json'));
+    if (VFS) VFS.revoke();
+    VFS = vfs;
+    S.vis = {public:true, unlisted:true, private:true, direct:false};
+    if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    setData(data);
+    setStatus(`게시물 ${data.statuses.length.toLocaleString('ko-KR')}개를 불러왔어요.`);
+    window.scrollTo(0, 0);
+  } catch(e){
+    console.error(e);
+    setStatus(e && e.message ? e.message : '아카이브를 열지 못했어요.', true);
+  }
+}
+
+/* ---------- export ---------- */
+function safeJSON(o){ return JSON.stringify(o).replace(/</g, '\\u003c').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029'); }
+function buildExportHTML(payload){
+  const css = $('#mav-css').textContent, js = $('#mav-js').textContent;
+  const A = payload.actor;
+  return `<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>${esc(A.name)} (${esc(A.handle)}) · 마스토돈 아카이브</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=Roboto:wght@400;500;700&display=swap">
+<style id="mav-css">${css}</style></head><body>
+<script>window.__MAV_EMBED__=${safeJSON(payload)};<\/script>
+<script id="mav-js">${js}<\/script>
+</body></html>`;
+}
+function exportPayload(){
+  const vis = {}; document.querySelectorAll('#export-modal [data-exvis]').forEach(c => vis[c.dataset.exvis] = c.checked);
+  const withLinks = $('#ex-links').checked;
+  const statuses = S.data.statuses.filter(s => vis[s.visibility]).map(s => { const c = Object.assign({}, s); delete c._t; delete c._text; return c; });
+  return {actor:S.data.actor, statuses, likes:withLinks ? S.data.likes : [], bookmarks:withLinks ? S.data.bookmarks : [], exportedAt:new Date().toISOString()};
+}
+function saveBlob(blob, name){
+  const u = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = u; a.download = name; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 120000);
+}
+async function doExport(htmlOnly){
+  const prog = $('#ex-progress'), go = $('#ex-go'), go2 = $('#ex-html');
+  go.disabled = go2.disabled = true;
+  try {
+    const payload = exportPayload();
+    const html = buildExportHTML(payload);
+    const base = 'mastodon-archive-' + (S.data.actor.username || 'export');
+    if (htmlOnly){ saveBlob(new Blob([html], {type:'text/html'}), 'index.html'); prog.textContent = 'index.html을 저장했어요.'; return; }
+    if (typeof zip === 'undefined') throw new Error('zip 라이브러리를 불러오지 못했어요.');
+    zip.configure({useWebWorkers:false});
+    const paths = new Set();
+    const add = p => { if (p && !/^(data:|blob:|https?:)/i.test(p)) paths.add(p); };
+    add(payload.actor.avatar); add(payload.actor.header);
+    for (const s of payload.statuses){ s.attachments.forEach(a => add(a.path)); Object.values(s.emojis || {}).forEach(add); }
+    Object.values(payload.actor.emojis || {}).forEach(add);
+    const w = new zip.ZipWriter(new zip.BlobWriter('application/zip'));
+    await w.add('index.html', new zip.TextReader(html));
+    let i = 0, miss = 0;
+    for (const p of paths){
+      i++; if (i % 10 === 0 || i === paths.size) prog.textContent = `미디어 담는 중… ${i.toLocaleString('ko-KR')} / ${paths.size.toLocaleString('ko-KR')}`;
+      const k = VFS && VFS.find(p);
+      if (!k){ miss++; continue; }
+      await w.add(p.replace(/^\/+/, ''), new zip.BlobReader(await VFS.blob(k)), {level:0});
+    }
+    prog.textContent = 'zip 파일을 마무리하는 중…';
+    const out = await w.close();
+    saveBlob(out, base + '.zip');
+    prog.textContent = `${base}.zip을 저장했어요 (게시물 ${payload.statuses.length.toLocaleString('ko-KR')}개, 미디어 ${(paths.size - miss).toLocaleString('ko-KR')}개).` + (miss ? ` 아카이브에 없는 미디어 ${miss}개는 빠졌어요.` : '');
+  } catch(e){ console.error(e); prog.textContent = '내보내지 못했어요: ' + (e.message || e); }
+  finally { go.disabled = go2.disabled = false; }
+}
+
+/* ---------- shell ---------- */
+function buildShell(){
+  const root = document.createElement('div');
+  root.id = 'mav-root';
+  root.innerHTML = `
+<div class="drop-ov" id="drop-ov" hidden><div>여기에 놓으면 바로 열어요</div></div>
+<div class="layout">
+  <aside class="side side-left collapsed" id="left">
+    <div class="topbar"><div class="brand"><span class="logo">${icon('mastodon')}</span><span>아카이브 뷰어</span></div>
+      <div class="acts"><button class="btn ghost side-toggle" data-act="toggle-side" aria-expanded="false">${icon('filter')}메뉴</button></div></div>
+    <div class="brand"><span class="logo">${icon('mastodon')}</span><span>아카이브 뷰어<small>마스토돈 데이터 내보내기 보기</small></span></div>
+    <label class="search"><span hidden>게시물 검색</span>${icon('search')}<input id="search-input" type="search" placeholder="게시물 검색" autocomplete="off"></label>
+    ${EMBED ? '' : `<section class="panel collapsible" id="loader"><h3>아카이브 열기</h3>
+      <div class="drop" id="dropzone"><p>아카이브 파일(.zip, .tar.gz)을<br>여기에 끌어다 놓으세요</p>
+        <button class="btn block" data-act="open">${icon('folder')}파일 선택</button>
+        <button class="linkbtn" data-act="open-dir">압축을 푼 폴더 선택하기</button></div>
+      <p class="small" style="margin-top:8px">파일은 이 브라우저 안에서만 읽어요. 어디에도 업로드되지 않아요.</p>
+      <p id="load-status" class="small" role="status" aria-live="polite"></p>
+      <button class="btn ghost block" data-act="export" style="margin-top:10px">${icon('download')}HTML로 내보내기</button></section>`}
+    <section class="panel collapsible"><h3>공개 범위</h3><div class="chips" id="vis-chips"></div>
+      <div class="row" style="margin-top:12px"><label for="sort" class="small">정렬</label><select id="sort"><option value="new">최신순</option><option value="old">오래된순</option></select></div></section>
+    <section class="panel collapsible"><h3>요약</h3><dl class="stats" id="stats"></dl><div class="years" id="years"></div></section>
+    <section class="panel collapsible"><h3>자주 쓴 해시태그</h3><div class="chips" id="tagcloud"></div></section>
+    ${EMBED ? `<p class="small collapsible" style="padding:0 4px">${esc(fmtDay(EMBED.exportedAt))}에 만든 아카이브예요.</p>` : ''}
+  </aside>
+  <main class="column" id="center">
+    <div class="banner" id="banner" hidden></div>
+    <div id="list-view">
+      <div class="col-head">${icon('posts')}<span>프로필</span>${panelBtn()}</div>
+      <div id="profile"></div>
+      <nav class="tabs" id="tabs" aria-label="게시물 종류"></nav>
+      <div class="filter-note" id="filter-note" hidden></div>
+      <div id="feed"></div>
+      <div class="loadmore" id="sentinel"></div>
+    </div>
+    <div id="detail-view" hidden></div>
+  </main>
+  <aside class="side side-right"><nav class="nav" id="nav" aria-label="탐색"></nav></aside>
+</div>
+<div class="lightbox" id="lb" hidden role="dialog" aria-modal="true" aria-label="미디어 보기">
+  <div class="lb-stage"></div><div class="lb-cap"></div>
+  <button class="lb-btn lb-close" data-act="lbclose" aria-label="닫기">${icon('close')}</button>
+  <button class="lb-btn lb-prev" data-act="lbprev" aria-label="이전">${icon('left')}</button>
+  <button class="lb-btn lb-next" data-act="lbnext" aria-label="다음">${icon('right')}</button>
+</div>
+<div class="modal" id="export-modal" hidden role="dialog" aria-modal="true" aria-labelledby="ex-title">
+  <div class="modal-card"><h2 id="ex-title">HTML로 내보내기</h2>
+    <p>지금 보는 화면 그대로 index.html과 미디어 파일을 zip 하나에 담아요. 압축을 풀고 index.html을 열면 인터넷 연결 없이도 볼 수 있고, 웹 호스팅에 그대로 올려도 돼요.</p>
+    <fieldset><legend>포함할 공개 범위</legend>${Object.entries(VIS).map(([k, v]) => `<label><input type="checkbox" id="ex-vis-${k}" data-exvis="${k}" ${k === 'direct' ? '' : 'checked'}>${icon(v.icon)}${v.label}</label>`).join('')}</fieldset>
+    <label><input type="checkbox" id="ex-links" checked>좋아요·북마크 목록 포함</label>
+    <p class="note" id="ex-frame-note" hidden>미리보기 화면 안에서는 파일 저장이 막혀 있어요. 받은 HTML 파일을 내 컴퓨터에서 브라우저로 열어 내보내 주세요.</p>
+    <p class="note">공개 사이트로 올릴 때는 팔로워 전용·개인적인 멘션을 빼는 걸 권해요.</p>
+    <div class="progress" id="ex-progress" role="status" aria-live="polite"></div>
+    <div class="acts"><button class="btn ghost" data-act="exclose">닫기</button><button class="btn ghost" id="ex-html" title="압축을 푼 아카이브 폴더 안에 넣어서 쓰는 파일">index.html만 받기</button><button class="btn" id="ex-go">${icon('download')}zip 만들기</button></div>
+  </div>
+</div>
+${EMBED ? '' : `<input type="file" id="f-zip" accept=".zip,.gz,.tgz,.tar,application/zip,application/gzip" hidden>
+<input type="file" id="f-dir" webkitdirectory multiple hidden>`}`;
+  document.body.append(root);
+}
+
+function bind(){
+  document.addEventListener('click', e => {
+    const t = e.target.closest('[data-act],[data-vis],[data-year],[data-tag],a.hashtag,a[rel~="tag"]');
+    if (t){
+      const act = t.dataset.act;
+      if (t.matches('a.hashtag, a[rel~="tag"]') && !act){
+        e.preventDefault(); e.stopPropagation();
+        S.tag = (t.textContent || '').replace(/^#/, '').trim().toLowerCase();
+        if (location.hash.startsWith('#post-') || S.tab === 'likes' || S.tab === 'bookmarks' || S.tab === 'media') location.hash = 'posts';
+        refreshList(); window.scrollTo(0, 0); return;
+      }
+      if (t.dataset.vis){ S.vis[t.dataset.vis] = !S.vis[t.dataset.vis]; t.setAttribute('aria-pressed', S.vis[t.dataset.vis]); refreshList(); return; }
+      if (t.dataset.year){ const y = +t.dataset.year; S.year = S.year === y ? null : y; renderLeft(); if (location.hash.startsWith('#post-')) location.hash = S.tab; refreshList(); return; }
+      if (t.dataset.tag){ S.tag = S.tag === t.dataset.tag ? null : t.dataset.tag; if (location.hash.startsWith('#post-') || S.tab === 'likes' || S.tab === 'bookmarks') location.hash = 'posts'; refreshList(); window.scrollTo(0,0); return; }
+      switch (act){
+        case 'open': $('#f-zip') && $('#f-zip').click(); return;
+        case 'open-dir': $('#f-dir') && $('#f-dir').click(); return;
+        case 'cw': { const b = t.closest('.status').querySelector('.cw-body'); b.hidden = !b.hidden; t.textContent = b.hidden ? '더 보기' : '접기'; t.setAttribute('aria-expanded', !b.hidden); e.stopPropagation(); return; }
+        case 'unblur': t.parentElement.classList.remove('blur'); t.remove(); e.stopPropagation(); return;
+        case 'lightbox': e.stopPropagation(); openLightbox(t.dataset.sid, +t.dataset.idx); return;
+        case 'lbclose': closeLB(); return;
+        case 'lbprev': LB.i = (LB.i - 1 + LB.items.length) % LB.items.length; showLB(); return;
+        case 'lbnext': LB.i = (LB.i + 1) % LB.items.length; showLB(); return;
+        case 'lbpost': closeLB(); return;
+        case 'back': location.hash = S.tab; return;
+        case 'clear': S.tag = null; S.year = null; S.q = ''; $('#search-input').value = ''; renderLeft(); refreshList(); return;
+        case 'showall': for (const k in S.vis) S.vis[k] = true; renderLeft(); refreshList(); return;
+        case 'toggle-left': setLeftHidden(!leftHidden()); return;
+        case 'toggle-side': { const l = $('#left'); l.classList.toggle('collapsed'); t.setAttribute('aria-expanded', !l.classList.contains('collapsed')); return; }
+        case 'export': if (t.disabled) return; $('#export-modal').hidden = false; $('#ex-progress').textContent = ''; $('#ex-frame-note').hidden = window.self === window.top; return;
+        case 'exclose': $('#export-modal').hidden = true; return;
+      }
+      return;
+    }
+    const st = e.target.closest('.status[data-id]:not(.focused)');
+    if (st && !e.target.closest('a,button,video,audio,.gallery') && !window.getSelection().toString()){
+      if (st.dataset.kind === 'boost') return;
+      location.hash = 'post-' + st.dataset.id;
+    }
+  });
+  $('#lb').addEventListener('click', e => { if (e.target === e.currentTarget || e.target.classList.contains('lb-stage')) closeLB(); });
+  $('#export-modal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.hidden = true; });
+  document.addEventListener('keydown', e => {
+    if (!$('#lb').hidden){
+      if (e.key === 'Escape') closeLB();
+      else if (e.key === 'ArrowLeft' && LB.items.length > 1){ LB.i = (LB.i - 1 + LB.items.length) % LB.items.length; showLB(); }
+      else if (e.key === 'ArrowRight' && LB.items.length > 1){ LB.i = (LB.i + 1) % LB.items.length; showLB(); }
+    } else if (e.key === 'Escape' && !$('#export-modal').hidden) $('#export-modal').hidden = true;
+  });
+  $('#ex-go').addEventListener('click', () => doExport(false));
+  $('#ex-html').addEventListener('click', () => doExport(true));
+  let timer;
+  $('#search-input').addEventListener('input', e => {
+    clearTimeout(timer);
+    timer = setTimeout(() => { S.q = e.target.value; if (location.hash.startsWith('#post-')) location.hash = S.tab; if (S.tab === 'media' && !S.q) {} refreshList(); }, 220);
+  });
+  $('#sort').addEventListener('change', e => { S.sort = e.target.value; refreshList(); });
+  window.addEventListener('hashchange', () => route(false));
+  io = new IntersectionObserver(en => { if (en[0].isIntersecting && !$('#list-view').hidden) renderMore(); }, {rootMargin:'800px'});
+  io.observe($('#sentinel'));
+  if (!EMBED){
+    $('#f-zip').addEventListener('change', e => { if (e.target.files.length) loadInput(e.target.files); e.target.value = ''; });
+    $('#f-dir').addEventListener('change', e => { if (e.target.files.length) loadInput(e.target.files); e.target.value = ''; });
+    let depth = 0; const ov = $('#drop-ov'), dz = $('#dropzone');
+    const hasFiles = e => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+    window.addEventListener('dragenter', e => { if (!hasFiles(e)) return; e.preventDefault(); depth++; ov.hidden = false; dz.classList.add('over'); });
+    window.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
+    window.addEventListener('dragleave', e => { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth){ ov.hidden = true; dz.classList.remove('over'); } });
+    window.addEventListener('drop', e => {
+      if (!hasFiles(e)) return; e.preventDefault(); depth = 0; ov.hidden = true; dz.classList.remove('over');
+      if (e.dataTransfer.files.length) loadInput(e.dataTransfer.files);
+    });
+  }
+}
+
+try { if (localStorage.getItem('mav-left-hidden') === '1') document.body.classList.add('left-hidden'); } catch(e){}
+buildShell();
+bind();
+setData(EMBED || buildSample());
+})();
+</script>
+
+</body></html>
