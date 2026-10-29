@@ -133,6 +133,14 @@ img{max-width:100%}
 .thread-fold{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
 .status[data-foreign]{cursor:default}
 details summary{list-style-position:inside}
+.status.excluded > :not(.ex-note){opacity:.38}
+.status.excluded{background:repeating-linear-gradient(-45deg,transparent 0 10px,var(--col-hover) 10px 20px)}
+.ex-note{display:flex;gap:8px;align-items:center;font-size:13px;font-weight:500;color:var(--warn)}
+.ex-note .ic{width:16px;height:16px}
+.ex-btn{background:none;border:0;padding:4px;border-radius:4px;color:var(--muted);cursor:pointer;display:inline-flex;opacity:1!important}
+.ex-btn:hover{color:var(--warn);background:var(--col-hover)}
+.status.excluded .actions{opacity:1}
+.status.excluded .actions > span{opacity:.3}
 .prepend{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-weight:500;padding-left:20px}
 .prepend .ic{width:17px;height:17px}
 .st-head{display:flex;gap:12px;align-items:flex-start;min-width:0}
@@ -330,6 +338,8 @@ details summary{list-style-position:inside}
 <p class="note">토큰은 비밀번호처럼 다뤄 주세요. 이 페이지는 토큰을 저장하지 않고, 내 인스턴스에 보내는 요청에만 써요. 다른 사람에게 보여주거나 채팅에 붙여 넣지 마세요.</p></section>
 <section id="h-export"><h3>6. HTML로 내보내기</h3>
 <ul><li><b>HTML로 내보내기</b>에서 포함할 공개 범위를 고르고 <b>zip 만들기</b>를 눌러요.</li>
+<li>내보내지 않을 글은 각 글 아래의 <b>휴지통 버튼</b>으로 빼요. 검색이나 해시태그로 거른 뒤 <b>이 결과 모두 내보내기에서 빼기</b>로 한 번에 뺄 수도 있어요. 뺀 글은 왼쪽 <b>내보내지 않을 글</b>에서 모아 보거나 되돌릴 수 있고, 이 브라우저가 기억해 둬요.</li>
+<li>타래 중간의 글을 빼면 그다음 글이 바로 앞 글에 이어 붙어요.</li>
 <li>zip을 풀고 <b>index.html</b>을 열면 인터넷 없이도 볼 수 있어요. 폴더째 웹 호스팅(GitHub Pages 등)에 올려도 돼요.</li>
 <li><b>index.html만 받기</b>는 미디어를 빼고 페이지만 저장해요. 압축을 푼 아카이브 폴더 안에 넣으면 사진도 같이 보여요.</li>
 <li>불러온 다른 사람 글과 그 사람들의 프로필 사진·이미지도 함께 담을 수 있어요. 서버가 막은 이미지는 원래 주소로 남아요.</li>
@@ -373,6 +383,8 @@ const P = {
   play:'<path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/>',
   filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
   help:'<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/>',
+  trash:'<path d="M4.5 6.5h15M9.5 6.5V4.5h5v2M6.5 6.5l1 13h9l1-13M10 10.5v6M14 10.5v6"/>',
+  undo:'<path d="M9 7.5L4.5 12 9 16.5M4.5 12h10a5 5 0 0 1 0 10h-3"/>',
   sidebar:'<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/>',
   file:'<path d="M6.5 3.5h7l4 4v13h-11z M13.5 3.5v4h4"/>',
   mastodon:'<path d="M20.9 13.4c-.3 1.4-2.5 2.9-5 3.2-1.3.2-2.6.3-4 .2-2.2-.1-4-.5-4-.5v.6c.3 2 2 2.2 3.7 2.2 1.7.1 3.2-.4 3.2-.4l.1 1.5s-1.2.6-3.3.8c-1.2.1-2.6 0-4.3-.5-3.6-1-4.2-4.9-4.3-8.9V8.4c0-4 2.6-5.1 2.6-5.1C6.9 2.7 9.2 2.5 11.6 2.5h.1c2.4 0 4.7.2 6 .8 0 0 2.6 1.1 2.6 5.1 0 0 0 2.9-.4 5z" fill="currentColor" stroke="none"/><path d="M17.3 8.9v4.8h-1.9V9c0-1-.4-1.5-1.2-1.5-.9 0-1.4.6-1.4 1.8v2.5h-1.9V9.3c0-1.2-.5-1.8-1.4-1.8-.8 0-1.2.5-1.2 1.5v4.7H6.4V8.9c0-1 .3-1.8.8-2.3.5-.6 1.2-.9 2.1-.9 1 0 1.8.4 2.3 1.2l.5.8.5-.8c.5-.8 1.3-1.2 2.3-1.2.9 0 1.6.3 2.1.9.5.5.8 1.3.8 2.3z" fill="var(--brand)" stroke="none"/>'
@@ -656,7 +668,9 @@ function setData(d){
     if (s.inReplyToId){ if (!S.children.has(s.inReplyToId)) S.children.set(s.inReplyToId, []); S.children.get(s.inReplyToId).push(s); }
     s._t = +new Date(s.published) || 0;
   }
-  S.tag = null; S.q = ''; S.year = null;
+  S.tag = null; S.q = ''; S.year = null; S.onlyExcluded = false;
+  S.excluded = new Set();
+  if (!EMBED && !d.sample){ try { const v = JSON.parse(localStorage.getItem('mav-ex:' + d.actor.id) || '[]'); if (Array.isArray(v)) v.forEach(x => S.excluded.add(String(x))); } catch(e){} }
   const st = {posts:0, replies:0, boosts:0, media:0, first:null, last:null, tags:new Map(), years:new Map(), vis:{public:0,unlisted:0,private:0,direct:0}};
   for (const s of d.statuses){
     if (s.kind === 'boost') st.boosts++; else if (s.inReplyTo && !s.inReplyToId) st.replies++; else st.posts++;
@@ -679,6 +693,10 @@ function textOf(s){
 }
 function filtered(){
   const q = S.q.trim().toLowerCase();
+  if (S.onlyExcluded){
+    const ex = [...S.excluded].map(getStatus).filter(Boolean);
+    return ex.sort((a,b) => S.sort === 'new' ? b._t - a._t : a._t - b._t);
+  }
   let out = S.data.statuses.filter(s => {
     if (!S.vis[s.visibility]) return false;
     if (S.tab === 'posts' && s.kind === 'post' && s.inReplyTo && !s.inReplyToId) return false;
@@ -787,13 +805,14 @@ function fromApi(st, key){
 
 function statusHTML(s, opt={}){
   const A = s.author || S.data.actor;
-  const cls = ['status']; if (opt.focused) cls.push('focused'); if (opt.hasNext) cls.push('has-next'); if (opt.hasPrev) cls.push('has-prev');
+  const isEx = !EMBED && S.excluded && S.excluded.has(s.id);
+  const cls = ['status']; if (isEx) cls.push('excluded'); if (opt.focused) cls.push('focused'); if (opt.hasNext) cls.push('has-next'); if (opt.hasPrev) cls.push('has-prev');
   const href = s.foreign ? esc(s.url) + '" target="_blank" rel="noopener noreferrer' : '#post-' + esc(s.id);
   const time = `<div class="st-time"><a href="${href}" title="${esc(fmtFull(s.published))}"><time datetime="${esc(s.published)}">${esc(relTime(s.published))}</time></a>${visBadge(s.visibility)}</div>`;
   const head = `<div class="st-head"><img class="st-avatar" alt="" data-media="${esc(A.avatar || '')}"><div class="st-names"><bdi class="dn">${sanitize(esc(A.name), A.emojis)}</bdi><span class="acct">${esc(A.handle)}</span></div>${opt.focused ? '' : time}</div>`;
   if (s.kind === 'boost'){
     return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}" data-kind="boost"><div class="prepend">${icon('boost')}<span>${sanitize(esc(A.name), A.emojis)}님이 부스트했습니다</span></div>
-      ${head}<div class="boost-card"><span class="bi">${icon('boost')}</span><div><a href="${esc(s.boostOf)}" target="_blank" rel="noopener noreferrer">${esc(acctFromUrl(s.boostOf))} 님의 게시물 ${icon('ext')}</a><p>아카이브에는 부스트한 글의 본문이 들어 있지 않아 원래 주소로 연결해요.</p></div></div></article>`;
+      ${!EMBED ? `<div class="ex-note"${isEx ? '' : ' hidden'}>${icon('trash')}<span>내보내기에서 빠지는 글이에요</span><button class="linkbtn" data-act="exclude" data-id="${esc(s.id)}">되돌리기</button></div>` : ''}${head}<div class="boost-card"><span class="bi">${icon('boost')}</span><div><a href="${esc(s.boostOf)}" target="_blank" rel="noopener noreferrer">${esc(acctFromUrl(s.boostOf))} 님의 게시물 ${icon('ext')}</a><p>아카이브에는 부스트한 글의 본문이 들어 있지 않아 원래 주소로 연결해요.</p></div>${!EMBED ? `<button class="ex-btn" data-act="exclude" data-id="${esc(s.id)}" title="${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}" aria-label="${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}" style="margin-left:auto">${icon(isEx ? 'undo' : 'trash')}</button>` : ''}</div></article>`;
   }
   let body = '';
   if (opt.hasPrev) {}
@@ -804,14 +823,15 @@ function statusHTML(s, opt={}){
   else body += inner;
   let foot;
   if (opt.focused){
-    foot = `<div class="focus-meta"><time datetime="${esc(s.published)}">${esc(fmtFull(s.published))}</time><span>·</span>${visBadge(s.visibility)}<span>${esc((VIS[s.visibility]||VIS.public).label)}</span>${s.url ? `<span>·</span><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">원래 주소 ${icon('ext')}</a>` : ''}${(!EMBED && !s.foreign) ? `<span>·</span><button class="linkbtn" data-act="fetchctx" data-id="${esc(s.id)}">${S.convOf.has(s.id) ? '대화 다시 불러오기' : '다른 사람 글까지 불러오기'}</button>` : ''}</div><p class="small" id="ctx-status" role="status"></p>`;
+    foot = `<div class="focus-meta"><time datetime="${esc(s.published)}">${esc(fmtFull(s.published))}</time><span>·</span>${visBadge(s.visibility)}<span>${esc((VIS[s.visibility]||VIS.public).label)}</span>${s.url ? `<span>·</span><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">원래 주소 ${icon('ext')}</a>` : ''}${!EMBED ? `<span>·</span><button class="linkbtn" data-act="exclude" data-id="${esc(s.id)}">${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}</button>` : ''}${(!EMBED && !s.foreign) ? `<span>·</span><button class="linkbtn" data-act="fetchctx" data-id="${esc(s.id)}">${S.convOf.has(s.id) ? '대화 다시 불러오기' : '다른 사람 글까지 불러오기'}</button>` : ''}</div><p class="small" id="ctx-status" role="status"></p>`;
   } else {
     const canBoost = s.visibility === 'public' || s.visibility === 'unlisted';
     const n = (!opt.inThread && !opt.hasPrev && !opt.hasNext) ? threadSize(s.id) : 1;
     if (n > 1) body += `<button class="thread-btn" data-act="thread" data-id="${esc(s.id)}">${icon('replies')}타래 이어보기 · ${n}개</button>`;
-    foot = `<div class="actions" aria-hidden="true"><span>${icon('reply')}${(S.children.get(s.id)||[]).length || ''}</span><span class="${canBoost ? '' : 'off'}">${icon(canBoost ? 'boost' : 'lock')}</span><span>${icon('star')}</span><span>${icon('bookmark')}</span><span>${icon('more')}</span></div>`;
+    foot = `<div class="actions" aria-hidden="true"><span>${icon('reply')}${(S.children.get(s.id)||[]).length || ''}</span><span class="${canBoost ? '' : 'off'}">${icon(canBoost ? 'boost' : 'lock')}</span><span>${icon('star')}</span><span>${icon('bookmark')}</span>${EMBED ? `<span>${icon('more')}</span>` : `<button class="ex-btn" data-act="exclude" data-id="${esc(s.id)}" aria-hidden="false" title="${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}" aria-label="${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}">${icon(isEx ? 'undo' : 'trash')}</button>`}</div>`;
   }
-  return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}"${s.foreign ? ' data-foreign="1"' : ''}>${head}${body}${foot}</article>`;
+  const exNote = !EMBED ? `<div class="ex-note"${isEx ? '' : ' hidden'}>${icon('trash')}<span>내보내기에서 빠지는 글이에요</span><button class="linkbtn" data-act="exclude" data-id="${esc(s.id)}">되돌리기</button></div>` : '';
+  return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}"${s.foreign ? ' data-foreign="1"' : ''}>${exNote}${head}${body}${foot}</article>`;
 }
 
 /* ---------- rendering: columns ---------- */
@@ -844,7 +864,8 @@ function refreshList(){
   if (S.q.trim()) notes.push(`“${esc(S.q.trim())}”`);
   const hidden = Object.entries(S.vis).filter(([k,v]) => !v).map(([k]) => VIS[k].label);
   const fn = $('#filter-note');
-  if (notes.length){ fn.hidden = false; fn.innerHTML = `<span>${notes.join(' · ')} · ${S.list.length.toLocaleString('ko-KR')}개</span><button class="linkbtn" data-act="clear">필터 지우기</button>`; }
+  if (S.onlyExcluded){ fn.hidden = false; fn.innerHTML = `<span>내보내기에서 뺀 글 ${S.list.length.toLocaleString('ko-KR')}개</span><button class="linkbtn" data-act="exshowall">전체 글로 돌아가기</button>`; }
+  else if (notes.length){ fn.hidden = false; fn.innerHTML = `<span>${notes.join(' · ')} · ${S.list.length.toLocaleString('ko-KR')}개</span><button class="linkbtn" data-act="clear">필터 지우기</button>${EMBED || isLinks || S.data.sample ? '' : '<button class="linkbtn" data-act="exclude-results">이 결과 모두 내보내기에서 빼기</button>'}`; }
   else if (hidden.length && !isLinks){ fn.hidden = false; fn.innerHTML = `<span>${esc(hidden.join(', '))} 글은 숨겨져 있어요</span><button class="linkbtn" data-act="showall">모두 보기</button>`; }
   else fn.hidden = true;
   if (isLinks && S.tab === 'likes' && !S.data.likes.length || isLinks && S.tab === 'bookmarks' && !S.data.bookmarks.length){
@@ -920,6 +941,7 @@ function renderLeft(){
   $('#tagcloud').innerHTML = tags.length ? tags.map(([t, n]) => `<button class="tagchip" data-tag="${esc(t)}">#${esc(t)}<b>${n}</b></button>`).join('') : '<p class="small">해시태그가 없어요.</p>';
   const gb = $('#group-toggle'); if (gb) gb.setAttribute('aria-pressed', S.group);
   const ac = $('#api-count'); if (ac){ const n = Object.keys(S.data.others).length; ac.textContent = n ? `지금까지 다른 사람 글 ${n.toLocaleString('ko-KR')}개를 불러왔어요.` : ''; }
+  renderExCount();
   const loaded = !S.data.sample;
   document.querySelectorAll('[data-act="export"]').forEach(b => b.disabled = !loaded || !!EMBED);
 }
@@ -1063,6 +1085,30 @@ async function fetchAll(){
   renderLeft(); refreshList();
 }
 
+/* ---------- exclude from export ---------- */
+function saveExcluded(){ try { localStorage.setItem('mav-ex:' + S.data.actor.id, JSON.stringify([...S.excluded])); } catch(e){} }
+function setExcluded(ids, on){
+  for (const id of ids){ if (on) S.excluded.add(id); else S.excluded.delete(id); }
+  saveExcluded();
+  for (const id of ids){
+    document.querySelectorAll(`.status[data-id="${CSS.escape(id)}"]`).forEach(el => {
+      el.classList.toggle('excluded', on);
+      const n = el.querySelector(':scope > .ex-note'); if (n) n.hidden = !on;
+      el.querySelectorAll('[data-act="exclude"]').forEach(b => {
+        if (b.classList.contains('ex-btn')){ b.innerHTML = icon(on ? 'undo' : 'trash'); b.title = b.ariaLabel = on ? '내보내기에 다시 넣기' : '내보내기에서 빼기'; }
+        else if (!b.closest('.ex-note')) b.textContent = on ? '내보내기에 다시 넣기' : '내보내기에서 빼기';
+      });
+    });
+  }
+  renderExCount();
+}
+function renderExCount(){
+  const n = S.excluded ? S.excluded.size : 0;
+  const box = $('#ex-panel-count');
+  if (box) box.innerHTML = n ? `내보내기에서 뺀 글 <b>${n.toLocaleString('ko-KR')}</b>개 · <button class="linkbtn" data-act="exonly">모아 보기</button> · <button class="linkbtn" data-act="exclear">모두 되돌리기</button>` : '각 글의 휴지통 버튼으로 내보내지 않을 글을 뺄 수 있어요.';
+  const m = $('#ex-excluded'); if (m) m.textContent = n ? `직접 뺀 글 ${n.toLocaleString('ko-KR')}개는 내보내지 않아요.` : '';
+}
+
 /* ---------- help ---------- */
 function openHelp(sec){
   const m = $('#help-modal'), body = $('#help-body'), tpl = document.getElementById('mav-help');
@@ -1180,11 +1226,28 @@ function buildExportHTML(payload){
 function exportPayload(){
   const vis = {}; document.querySelectorAll('#export-modal [data-exvis]').forEach(c => vis[c.dataset.exvis] = c.checked);
   const withLinks = $('#ex-links').checked;
-  const statuses = S.data.statuses.filter(s => vis[s.visibility]).map(s => { const c = Object.assign({}, s); delete c._t; delete c._text; return c; });
+  const ex = S.excluded || new Set();
+  const statuses = S.data.statuses.filter(s => vis[s.visibility] && !ex.has(s.id)).map(s => { const c = Object.assign({}, s); delete c._t; delete c._text; return c; });
   const others = {}, convos = [];
   if ($('#ex-others').checked){
-    for (const [k, o] of Object.entries(S.data.others)) if (vis[o.visibility]){ const c = Object.assign({}, o); delete c._t; delete c._text; others[k] = JSON.parse(JSON.stringify(c)); }
-    for (const c of S.data.convos) convos.push({order:c.order, parent:c.parent});
+    for (const [k, o] of Object.entries(S.data.others)) if (vis[o.visibility] && !ex.has(k)){ const c = Object.assign({}, o); delete c._t; delete c._text; others[k] = JSON.parse(JSON.stringify(c)); }
+  }
+  const kept = new Set([...statuses.map(x => x.id), ...Object.keys(others)]);
+  // re-link replies whose parent was left out to the nearest kept ancestor
+  const ownParent = id => { const o = S.byId.get(id); return o && o.inReplyToId; };
+  for (const c of statuses){
+    if (!c.inReplyToId || kept.has(c.inReplyToId)) continue;
+    let p = c.inReplyToId, guard = 0; while (p && !kept.has(p) && guard++ < 1000) p = ownParent(p);
+    if (p) c.inReplyToId = p; else { delete c.inReplyToId; c.inReplyTo = null; }
+  }
+  if ($('#ex-others').checked){
+    for (const c of S.data.convos){
+      const par = c.parent, np = {};
+      const up = x => { let p = par[x] || ownParent(x), g = 0; while (p && !kept.has(p) && g++ < 1000) p = par[p] || ownParent(p); return p; };
+      const order = c.order.filter(x => kept.has(x));
+      for (const x of order){ const p = up(x); if (p) np[x] = p; }
+      if (order.length) convos.push({order, parent:np});
+    }
   }
   return {actor:S.data.actor, statuses, others, convos, likes:withLinks ? S.data.likes : [], bookmarks:withLinks ? S.data.bookmarks : [], exportedAt:new Date().toISOString()};
 }
@@ -1278,6 +1341,7 @@ function buildShell(){
       <p class="small" id="api-progress" role="status" aria-live="polite" style="margin-top:8px"></p>
       <p class="small" id="api-count"></p>
       <button class="linkbtn" data-act="diagnose" style="margin-top:6px">문제 진단</button></section>`}
+    ${EMBED ? '' : `<section class="panel collapsible"><h3>내보내지 않을 글</h3><p class="small" id="ex-panel-count"></p></section>`}
     <section class="panel collapsible"><h3>요약</h3><dl class="stats" id="stats"></dl><div class="years" id="years"></div></section>
     <section class="panel collapsible"><h3>자주 쓴 해시태그</h3><div class="chips" id="tagcloud"></div></section>
     ${EMBED ? `<p class="small collapsible" style="padding:0 4px">${esc(fmtDay(EMBED.exportedAt))}에 만든 아카이브예요.</p>` : ''}
@@ -1306,6 +1370,7 @@ function buildShell(){
   <div class="modal-card"><h2 id="ex-title">HTML로 내보내기</h2>
     <p>지금 보는 화면 그대로 index.html과 미디어 파일을 zip 하나에 담아요. 압축을 풀고 index.html을 열면 인터넷 연결 없이도 볼 수 있고, 웹 호스팅에 그대로 올려도 돼요.</p>
     <fieldset><legend>포함할 공개 범위</legend>${Object.entries(VIS).map(([k, v]) => `<label><input type="checkbox" id="ex-vis-${k}" data-exvis="${k}" ${k === 'direct' ? '' : 'checked'}>${icon(v.icon)}${v.label}</label>`).join('')}</fieldset>
+    <p class="note" id="ex-excluded"></p>
     <label><input type="checkbox" id="ex-links" checked>좋아요·북마크 목록 포함</label>
     <label><input type="checkbox" id="ex-others" checked>불러온 다른 사람 글 포함</label>
     <label><input type="checkbox" id="ex-remote" checked>다른 사람 글의 프로필 사진·이미지도 zip에 담기</label>
@@ -1365,6 +1430,11 @@ function bind(){
         case 'fetchctx': fetchOne(t.dataset.id, t); return;
         case 'fetchall': fetchAll(); return;
         case 'diagnose': diagnose(); return;
+        case 'exclude': { e.stopPropagation(); const id = t.dataset.id; setExcluded([id], !S.excluded.has(id)); return; }
+        case 'exclude-results': { const ids = S.list.map(x => x && (x.id || (x.s && x.s.id))).filter(Boolean); setExcluded([...new Set(ids)], true); return; }
+        case 'exonly': S.onlyExcluded = true; if (location.hash.slice(1) !== 'replies') location.hash = 'replies'; refreshList(); window.scrollTo(0,0); return;
+        case 'exshowall': S.onlyExcluded = false; refreshList(); return;
+        case 'exclear': setExcluded([...S.excluded], false); if (S.onlyExcluded) refreshList(); return;
         case 'help': openHelp(t.dataset.sec); return;
         case 'helpclose': $('#help-modal').hidden = true; return;
         case 'diagclose': $('#diag-modal').hidden = true; return;
@@ -1372,7 +1442,7 @@ function bind(){
           try { navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); }); } catch(err){ ta.select(); } return; }
         case 'toggle-left': setLeftHidden(!leftHidden()); return;
         case 'toggle-side': { const l = $('#left'); l.classList.toggle('collapsed'); t.setAttribute('aria-expanded', !l.classList.contains('collapsed')); return; }
-        case 'export': if (t.disabled) return; $('#export-modal').hidden = false; $('#ex-progress').textContent = ''; $('#ex-frame-note').hidden = window.self === window.top; return;
+        case 'export': if (t.disabled) return; renderExCount(); $('#export-modal').hidden = false; $('#ex-progress').textContent = ''; $('#ex-frame-note').hidden = window.self === window.top; return;
         case 'exclose': $('#export-modal').hidden = true; return;
       }
       return;
