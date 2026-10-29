@@ -126,6 +126,13 @@ img{max-width:100%}
 .status.has-next::before{content:"";position:absolute;left:38px;top:66px;bottom:0;width:2px;background:var(--line)}
 .status.has-prev::after{content:"";position:absolute;left:38px;top:0;height:16px;width:2px;background:var(--line)}
 .status.has-next > :not(.st-head),.status.has-prev:not(.focused) > :not(.st-head){margin-left:58px}
+.thread-btn{align-self:flex-start;background:none;border:0;padding:2px 0;color:var(--link);font-weight:500;font-size:14px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+.thread-btn .ic{width:17px;height:17px}
+.thread-btn:hover{text-decoration:underline}
+.thread-block .status.has-next,#detail-view .status.has-next{border-bottom:0}
+.thread-fold{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--line)}
+.status[data-foreign]{cursor:default}
+details summary{list-style-position:inside}
 .prepend{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted);font-weight:500;padding-left:20px}
 .prepend .ic{width:17px;height:17px}
 .st-head{display:flex;gap:12px;align-items:flex-start;min-width:0}
@@ -243,6 +250,18 @@ img{max-width:100%}
 @media (min-width:841px) and (max-width:1180px){
   body.left-hidden .layout{grid-template-columns:minmax(0,600px)}
 }
+.modal-card.help{width:min(680px,100%);gap:0;padding:0}
+.help-head{position:sticky;top:0;background:var(--col);display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid var(--line);z-index:1}
+.help-body{padding:4px 20px 20px;font-size:14px;line-height:1.6}
+.help-body h3{font-size:16px;margin:22px 0 8px}
+.help-body section{scroll-margin-top:60px}
+.help-body p{margin:0 0 8px;color:var(--text)}
+.help-body ol,.help-body ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:4px}
+.help-body code{background:var(--chip);padding:1px 5px;border-radius:3px;font-size:.92em;overflow-wrap:anywhere}
+.help-body .note{margin-top:10px;color:var(--muted)}
+.help-toc{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+.help-toc a{background:var(--chip);color:var(--text);border-radius:99px;padding:4px 10px;font-size:13px}
+.help-toc a:hover{background:var(--brand);color:var(--on-brand);text-decoration:none}
 .topbar{display:none}
 .side-toggle{display:none}
 
@@ -272,6 +291,55 @@ img{max-width:100%}
 </style>
 </head><body>
 
+<template id="mav-help">
+<nav class="help-toc" aria-label="설명서 목차">
+  <a href="#" data-help="h-get">아카이브 받기</a><a href="#" data-help="h-open">열어 보기</a><a href="#" data-help="h-view">화면 보는 법</a>
+  <a href="#" data-help="h-others">다른 사람 글 백업</a><a href="#" data-help="h-token">액세스 토큰 만들기</a><a href="#" data-help="h-export">HTML로 내보내기</a><a href="#" data-help="h-trouble">잘 안 될 때</a>
+</nav>
+<section id="h-get"><h3>1. 아카이브 받기</h3>
+<ol><li>마스토돈 웹에서 <b>환경설정 → 가져오기 및 내보내기 → 데이터 내보내기</b>로 가요.</li>
+<li><b>아카이브 요청</b>을 누르면 준비가 끝났을 때 메일로 알려줘요. 글이 많으면 몇 시간 걸리기도 해요.</li>
+<li>같은 화면에서 zip 파일(예전 서버는 .tar.gz)을 내려받아요. 아카이브는 7일에 한 번만 요청할 수 있어요.</li></ol></section>
+<section id="h-open"><h3>2. 열어 보기</h3>
+<ul><li>받은 파일을 이 화면 아무 곳에나 끌어다 놓거나 <b>파일 선택</b>으로 골라요.</li>
+<li>압축을 이미 풀었다면 <b>압축을 푼 폴더 선택하기</b>로 폴더째 열 수 있어요.</li>
+<li>파일은 이 브라우저 안에서만 읽어요. 어디에도 업로드되지 않아요.</li></ul></section>
+<section id="h-view"><h3>3. 화면 보는 법</h3>
+<ul><li><b>게시물 / 게시물과 답글 / 미디어 / 좋아요 / 북마크</b> 탭으로 나눠 볼 수 있어요.</li>
+<li>이어 쓴 글은 첫 글 하나로 묶여요. <b>타래 이어보기</b>를 누르면 그 자리에서 펼쳐지고, <b>타래 접기</b>로 다시 접어요. 하나씩 보고 싶으면 <b>이어 쓴 타래 하나로 묶기</b>를 끄세요.</li>
+<li>게시물을 누르면 앞뒤 대화가 이어진 상세 화면이 열려요.</li>
+<li>왼쪽 패널에서 검색, 공개 범위, 정렬, 연도, 해시태그로 거를 수 있어요. 가운데 칼럼 오른쪽 위 아이콘으로 왼쪽 패널을 숨길 수 있어요.</li>
+<li>좋아요·북마크·부스트는 아카이브에 원래 글 주소만 저장돼서 링크로 보여줘요.</li></ul></section>
+<section id="h-others"><h3>4. 다른 사람 글 함께 백업</h3>
+<p>아카이브에는 내 글만 들어 있어요. 내 글에 달린 남의 답글이나 내가 답한 원래 글은 내 인스턴스 서버에 물어서 가져와요.</p>
+<ul><li>인스턴스와 내 계정이 아직 살아 있어야 해요.</li>
+<li>왼쪽 <b>다른 사람 글 함께 백업</b>에서 범위를 고르고 <b>대화 불러오기 시작</b>을 눌러요. 게시물 하나만 받으려면 글을 열고 <b>다른 사람 글까지 불러오기</b>를 누르세요.</li>
+<li>서버 요청 한도 때문에 글 하나에 1초쯤 걸려요. 답글 500개면 10분 정도예요. 중간에 <b>멈추기</b>를 눌러도 그때까지 받은 글은 남아요.</li>
+<li><b>팔로워 전용·개인적인 멘션 글</b>의 대화는 액세스 토큰이 있어야 받을 수 있어요. 아래 5번을 보세요.</li>
+<li>내 서버에 전달되지 않은 다른 서버의 답글은 빠질 수 있어요.</li>
+<li>불러온 글은 페이지를 닫으면 사라져요. 다 받으면 바로 내보내기를 하세요.</li></ul></section>
+<section id="h-token"><h3>5. 액세스 토큰 만들기</h3>
+<ol><li>마스토돈 웹에서 <b>환경설정 → 개발 → 새 애플리케이션</b>을 눌러요. 주소창에 <code>https://내인스턴스/settings/applications/new</code>를 넣어도 돼요.</li>
+<li><b>애플리케이션 이름</b>: 아무거나 괜찮아요. 예: <code>아카이브 백업</code></li>
+<li><b>애플리케이션 웹사이트</b>: 비워 두세요. 꼭 넣어야 하면 내 프로필 주소를 넣으면 돼요.</li>
+<li><b>리다이렉트 URI</b>: 기본값 <code>urn:ietf:wg:oauth:2.0:oob</code>를 그대로 두세요. 비어 있으면 이 값을 넣으세요. 이 방식에서는 리다이렉트를 쓰지 않아요.</li>
+<li><b>범위(권한)</b>: 체크된 것을 모두 해제하고 <code>read:statuses</code> 하나만 체크하세요. 목록에 없으면 <code>read</code>를 체크해요. 읽기 권한만 있어서 토큰이 새어 나가도 글을 쓰거나 지울 수 없어요.</li>
+<li><b>제출</b>을 누르고, 목록에 생긴 앱 이름을 눌러 들어가요.</li>
+<li><b>액세스 토큰</b> 값만 복사해서 왼쪽 <b>비공개 글도 불러오기 (액세스 토큰)</b> 칸에 붙여 넣어요. 클라이언트 키와 비밀키는 필요 없어요.</li>
+<li>백업이 끝나면 같은 화면에서 그 앱을 <b>삭제</b>하세요. 토큰도 함께 무효가 돼요.</li></ol>
+<p class="note">토큰은 비밀번호처럼 다뤄 주세요. 이 페이지는 토큰을 저장하지 않고, 내 인스턴스에 보내는 요청에만 써요. 다른 사람에게 보여주거나 채팅에 붙여 넣지 마세요.</p></section>
+<section id="h-export"><h3>6. HTML로 내보내기</h3>
+<ul><li><b>HTML로 내보내기</b>에서 포함할 공개 범위를 고르고 <b>zip 만들기</b>를 눌러요.</li>
+<li>zip을 풀고 <b>index.html</b>을 열면 인터넷 없이도 볼 수 있어요. 폴더째 웹 호스팅(GitHub Pages 등)에 올려도 돼요.</li>
+<li><b>index.html만 받기</b>는 미디어를 빼고 페이지만 저장해요. 압축을 푼 아카이브 폴더 안에 넣으면 사진도 같이 보여요.</li>
+<li>불러온 다른 사람 글과 그 사람들의 프로필 사진·이미지도 함께 담을 수 있어요. 서버가 막은 이미지는 원래 주소로 남아요.</li>
+<li>공개 사이트로 올릴 때는 팔로워 전용·개인적인 멘션을 빼는 걸 권해요.</li>
+<li>내보낸 사이트에는 아카이브 열기, 대화 불러오기, 이 설명서가 들어가지 않아요.</li></ul></section>
+<section id="h-trouble"><h3>7. 잘 안 될 때</h3>
+<ul><li>이 파일을 Claude 미리보기 화면에서 열면 파일 저장과 서버 접속이 막혀요. 받은 HTML 파일을 내 컴퓨터 브라우저로 여세요.</li>
+<li>.tar.gz가 열리지 않으면 최신 Chrome·Firefox·Safari를 쓰거나, 압축을 풀어서 폴더로 여세요.</li>
+<li>다른 사람 글 불러오기가 안 되면 왼쪽의 <b>문제 진단</b>을 눌러 보세요. 서버 연결, 글 찾기, 대화 불러오기를 차례로 점검해 줘요.</li></ul></section>
+</template>
 <script src="https://cdn.jsdelivr.net/npm/@zip.js/zip.js@2.7.57/dist/zip-full.min.js"></script>
 <script id="mav-js">
 (function(){
@@ -304,6 +372,7 @@ const P = {
   ext:'<path d="M14 4.5h5.5V10M19.5 4.5L11 13M17.5 14v5.5h-13v-13H10"/>',
   play:'<path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/>',
   filter:'<path d="M4 6h16M7 12h10M10 18h4"/>',
+  help:'<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.5 2.5 0 0 1 4.8.9c0 1.7-2.4 2.2-2.4 3.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/>',
   sidebar:'<rect x="3.5" y="4.5" width="17" height="15" rx="2"/><path d="M9.5 4.5v15"/>',
   file:'<path d="M6.5 3.5h7l4 4v13h-11z M13.5 3.5v4h4"/>',
   mastodon:'<path d="M20.9 13.4c-.3 1.4-2.5 2.9-5 3.2-1.3.2-2.6.3-4 .2-2.2-.1-4-.5-4-.5v.6c.3 2 2 2.2 3.7 2.2 1.7.1 3.2-.4 3.2-.4l.1 1.5s-1.2.6-3.3.8c-1.2.1-2.6 0-4.3-.5-3.6-1-4.2-4.9-4.3-8.9V8.4c0-4 2.6-5.1 2.6-5.1C6.9 2.7 9.2 2.5 11.6 2.5h.1c2.4 0 4.7.2 6 .8 0 0 2.6 1.1 2.6 5.1 0 0 0 2.9-.4 5z" fill="currentColor" stroke="none"/><path d="M17.3 8.9v4.8h-1.9V9c0-1-.4-1.5-1.2-1.5-.9 0-1.4.6-1.4 1.8v2.5h-1.9V9.3c0-1.2-.5-1.8-1.4-1.8-.8 0-1.2.5-1.2 1.5v4.7H6.4V8.9c0-1 .3-1.8.8-2.3.5-.6 1.2-.9 2.1-.9 1 0 1.8.4 2.3 1.2l.5.8.5-.8c.5-.8 1.3-1.2 2.3-1.2.9 0 1.6.3 2.1.9.5.5.8 1.3.8 2.3z" fill="var(--brand)" stroke="none"/>'
@@ -454,15 +523,16 @@ function normalize(actorJson, outbox, likesJson, bookmarksJson){
       poll = {options: opts, multiple: !!o.anyOf, voters: o.votersCount || sum, total: sum, endTime: o.endTime || o.closed || null, closed: !!o.closed || (o.endTime && new Date(o.endTime) < new Date())};
     }
     statuses.push({
-      id: idFrom(o.id, 'n' + i), kind:'post', url: o.url || o.id || '', published: o.published || it.published,
+      id: idFrom(o.id, 'n' + i), uri: o.id || '', kind:'post', url: (o.url && (o.url.href || o.url)) || o.id || '', published: o.published || it.published,
       content, summary: o.summary || '', sensitive: !!o.sensitive, visibility: visibilityOf(o.to ? o : it),
-      inReplyTo: o.inReplyTo || null, tags, attachments, poll, emojis: emojiMap(o.tag),
+      inReplyTo: (o.inReplyTo && (o.inReplyTo.id || o.inReplyTo)) || null, tags, attachments, poll, emojis: emojiMap(o.tag),
       lang: Object.keys(o.contentMap || {})[0] || ''
     });
   });
-  const ids = new Set(statuses.map(s => s.id));
+  const byRef = new Map(), norm = u => String(u || '').replace(/[?#].*$/, '').replace(/\/+$/, '');
+  for (const s of statuses) if (s.kind === 'post'){ if (s.uri) byRef.set(norm(s.uri), s.id); if (s.url) byRef.set(norm(s.url), s.id); }
   for (const s of statuses){
-    if (s.inReplyTo){ const rid = idFrom(s.inReplyTo, ''); if (rid && ids.has(rid) && (!host || String(s.inReplyTo).includes(host))) s.inReplyToId = rid; }
+    if (s.inReplyTo){ const r = byRef.get(norm(s.inReplyTo)); if (r && r !== s.id) s.inReplyToId = r; }
   }
   const urlList = j => arr(j && j.orderedItems).map(x => typeof x === 'string' ? x : (x && (x.id || x.url))).filter(Boolean);
   return {actor, statuses, likes: urlList(likesJson).reverse(), bookmarks: urlList(bookmarksJson).reverse()};
@@ -567,7 +637,7 @@ const S = {
   data:null, byId:new Map(), children:new Map(), stats:null,
   tab:'posts', q:'', tag:null, year:null, sort:'new',
   vis:{public:true, unlisted:true, private:true, direct:false},
-  list:[], shown:0, listScroll:0, sideCollapsed:true
+  list:[], shown:0, listScroll:0, sideCollapsed:true, group:true, convOf:new Map()
 };
 const TABS = [
   {id:'posts', label:'게시물', icon:'posts'}, {id:'replies', label:'게시물과 답글', icon:'replies'},
@@ -575,7 +645,12 @@ const TABS = [
 ];
 
 function setData(d){
-  S.data = d; S.byId = new Map(); S.children = new Map();
+  S.data = d; S.byId = new Map(); S.children = new Map(); S.convOf = new Map();
+  d.others = d.others || {}; d.convos = d.convos || [];
+  S.byUri = new Map(); S.apiId = S.apiId || new Map();
+  for (const x of d.statuses){ if (x.uri) S.byUri.set(String(x.uri).replace(/\/+$/, ''), x.id); if (x.url) S.byUri.set(String(x.url).replace(/\/+$/, ''), x.id); }
+  for (const c of d.convos) for (const x of c.order) S.convOf.set(x, c);
+  for (const o of Object.values(d.others)) o._t = +new Date(o.published) || 0;
   for (const s of d.statuses){
     S.byId.set(s.id, s);
     if (s.inReplyToId){ if (!S.children.has(s.inReplyToId)) S.children.set(s.inReplyToId, []); S.children.get(s.inReplyToId).push(s); }
@@ -607,6 +682,7 @@ function filtered(){
   let out = S.data.statuses.filter(s => {
     if (!S.vis[s.visibility]) return false;
     if (S.tab === 'posts' && s.kind === 'post' && s.inReplyTo && !s.inReplyToId) return false;
+    if (S.group && !q && !S.tag && (S.tab === 'posts' || S.tab === 'replies') && s.inReplyToId && S.vis[(S.byId.get(s.inReplyToId)||{}).visibility]) return false;
     if (S.tab === 'media' && !s.attachments.some(a => a.type !== 'other')) return false;
     if (S.tag && !s.tags.includes(S.tag)) return false;
     if (S.year && new Date(s._t).getFullYear() !== S.year) return false;
@@ -662,29 +738,80 @@ function acctFromUrl(u){
   try { const x = new URL(u); let m = x.pathname.match(/^\/@([^/]+)/) || x.pathname.match(/^\/users\/([^/]+)/);
     return m ? `@${m[1]}@${x.host}` : x.host; } catch(e){ return u; }
 }
+/* ---------- threads ---------- */
+const getStatus = id => S.byId.get(id) || (S.data.others && S.data.others[id]) || null;
+const shown = x => x && (x.foreign || S.vis[x.visibility]);
+function threadOf(id){
+  const c = S.convOf.get(id);
+  const anc = [], desc = [];
+  if (c){
+    const par = Object.assign({}, c.parent);
+    for (const x of c.order){ const own = S.byId.get(x); if (own && own.inReplyToId && !par[x]) par[x] = own.inReplyToId; }
+    let cur = par[id]; const seen = new Set([id]);
+    while (cur && !seen.has(cur)){ seen.add(cur); const st = getStatus(cur); if (st) anc.unshift(st); cur = par[cur]; }
+    const kids = new Map();
+    for (const x of new Set([...c.order, ...S.byId.keys()].filter(k => par[k] || (S.byId.get(k)||{}).inReplyToId))){
+      const p = par[x] || S.byId.get(x).inReplyToId; if (!kids.has(p)) kids.set(p, []); kids.get(p).push(x);
+    }
+    const done = new Set([id]);
+    (function walk(p){ for (const k of (kids.get(p) || []).map(getStatus).filter(Boolean).sort((a,b) => a._t - b._t)){ if (done.has(k.id)) continue; done.add(k.id); desc.push(k); walk(k.id); } })(id);
+  } else {
+    let cur = S.byId.get(id);
+    while (cur && cur.inReplyToId && S.byId.has(cur.inReplyToId) && anc.length < 500){ cur = S.byId.get(cur.inReplyToId); anc.unshift(cur); }
+    (function walk(p, d){ for (const k of (S.children.get(p) || []).sort((a,b) => a._t - b._t)){ desc.push(k); if (d < 500) walk(k.id, d+1); } })(id, 0);
+  }
+  return {anc: anc.filter(shown), desc: desc.filter(shown)};
+}
+function threadSize(id){ const t = threadOf(id); return 1 + t.anc.length + t.desc.length; }
+const emo = list => Object.fromEntries((list || []).map(e => [`:${e.shortcode}:`, e.url || e.static_url]));
+function fromApi(st, key){
+  const acc = st.account || {};
+  let own = ''; try { own = new URL(S.data.actor.id).host; } catch(e){}
+  const acct = acc.acct || acc.username || '';
+  const vis = {public:'public', unlisted:'unlisted', private:'private', direct:'direct'}[st.visibility] || 'public';
+  const mt = m => m.type === 'image' ? 'image' : (m.type === 'video' || m.type === 'gifv') ? 'video' : m.type === 'audio' ? 'audio' : 'other';
+  const o = {
+    id:key || String(st.id), kind:'post', foreign:true, url: st.url || st.uri || '', published: st.created_at,
+    content: st.content || '', summary: st.spoiler_text || '', sensitive: !!st.sensitive, visibility: vis,
+    inReplyTo: null, tags: (st.tags || []).map(t => String(t.name).toLowerCase()), emojis: emo(st.emojis), lang: st.language || '',
+    attachments: (st.media_attachments || []).map(m => ({type: mt(m), path: m.url || m.remote_url || '', alt: m.description || '',
+      w: (m.meta && m.meta.original && m.meta.original.width) || 0, h: (m.meta && m.meta.original && m.meta.original.height) || 0})).filter(a => a.path),
+    poll: st.poll ? {options: (st.poll.options || []).map(x => ({name: x.title, count: x.votes_count || 0})), multiple: !!st.poll.multiple,
+      voters: st.poll.voters_count ?? st.poll.votes_count ?? 0, total: st.poll.votes_count || 0, endTime: st.poll.expires_at, closed: !!st.poll.expired} : null,
+    author: {name: acc.display_name || acc.username || acct, handle: '@' + (acct.includes('@') ? acct : acct + (own ? '@' + own : '')),
+      avatar: acc.avatar_static || acc.avatar || '', url: acc.url || '', emojis: emo(acc.emojis)}
+  };
+  o._t = +new Date(o.published) || 0;
+  return o;
+}
+
 function statusHTML(s, opt={}){
-  const A = S.data.actor;
+  const A = s.author || S.data.actor;
   const cls = ['status']; if (opt.focused) cls.push('focused'); if (opt.hasNext) cls.push('has-next'); if (opt.hasPrev) cls.push('has-prev');
-  const time = `<div class="st-time"><a href="#post-${esc(s.id)}" title="${esc(fmtFull(s.published))}"><time datetime="${esc(s.published)}">${esc(relTime(s.published))}</time></a>${visBadge(s.visibility)}</div>`;
+  const href = s.foreign ? esc(s.url) + '" target="_blank" rel="noopener noreferrer' : '#post-' + esc(s.id);
+  const time = `<div class="st-time"><a href="${href}" title="${esc(fmtFull(s.published))}"><time datetime="${esc(s.published)}">${esc(relTime(s.published))}</time></a>${visBadge(s.visibility)}</div>`;
   const head = `<div class="st-head"><img class="st-avatar" alt="" data-media="${esc(A.avatar || '')}"><div class="st-names"><bdi class="dn">${sanitize(esc(A.name), A.emojis)}</bdi><span class="acct">${esc(A.handle)}</span></div>${opt.focused ? '' : time}</div>`;
   if (s.kind === 'boost'){
     return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}" data-kind="boost"><div class="prepend">${icon('boost')}<span>${sanitize(esc(A.name), A.emojis)}님이 부스트했습니다</span></div>
       ${head}<div class="boost-card"><span class="bi">${icon('boost')}</span><div><a href="${esc(s.boostOf)}" target="_blank" rel="noopener noreferrer">${esc(acctFromUrl(s.boostOf))} 님의 게시물 ${icon('ext')}</a><p>아카이브에는 부스트한 글의 본문이 들어 있지 않아 원래 주소로 연결해요.</p></div></div></article>`;
   }
   let body = '';
-  if (s.inReplyTo && !s.inReplyToId) body += `<div class="reply-to">${icon('reply')}<span>답글:</span><a href="${esc(s.inReplyTo)}" target="_blank" rel="noopener noreferrer">${esc(acctFromUrl(s.inReplyTo))}</a></div>`;
-  else if (s.inReplyToId && !opt.hasPrev) body += `<div class="reply-to">${icon('reply')}<a href="#post-${esc(s.inReplyToId)}">내 게시물에 이어서 쓴 글</a></div>`;
+  if (opt.hasPrev) {}
+  else if (s.inReplyTo && !s.inReplyToId) body += `<div class="reply-to">${icon('reply')}<span>답글:</span><a href="${esc(s.inReplyTo)}" target="_blank" rel="noopener noreferrer">${esc(acctFromUrl(s.inReplyTo))}</a></div>`;
+  else if (s.inReplyToId) body += `<div class="reply-to">${icon('reply')}<a href="#post-${esc(s.inReplyToId)}">내 게시물에 이어서 쓴 글</a></div>`;
   const inner = `<div class="content" lang="${esc(s.lang||'')}">${sanitize(s.content, s.emojis)}</div>${s.poll ? pollHTML(s.poll) : ''}${gallery(s)}`;
   if (s.summary) body += `<div class="cw"><p>${sanitize(esc(s.summary), s.emojis)}</p><button class="cw-btn" data-act="cw" aria-expanded="false">더 보기</button></div><div class="cw-body" hidden style="display:flex;flex-direction:column;gap:10px">${inner}</div>`;
   else body += inner;
   let foot;
   if (opt.focused){
-    foot = `<div class="focus-meta"><time datetime="${esc(s.published)}">${esc(fmtFull(s.published))}</time><span>·</span>${visBadge(s.visibility)}<span>${esc((VIS[s.visibility]||VIS.public).label)}</span>${s.url ? `<span>·</span><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">원래 주소 ${icon('ext')}</a>` : ''}</div>`;
+    foot = `<div class="focus-meta"><time datetime="${esc(s.published)}">${esc(fmtFull(s.published))}</time><span>·</span>${visBadge(s.visibility)}<span>${esc((VIS[s.visibility]||VIS.public).label)}</span>${s.url ? `<span>·</span><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">원래 주소 ${icon('ext')}</a>` : ''}${(!EMBED && !s.foreign) ? `<span>·</span><button class="linkbtn" data-act="fetchctx" data-id="${esc(s.id)}">${S.convOf.has(s.id) ? '대화 다시 불러오기' : '다른 사람 글까지 불러오기'}</button>` : ''}</div><p class="small" id="ctx-status" role="status"></p>`;
   } else {
     const canBoost = s.visibility === 'public' || s.visibility === 'unlisted';
+    const n = (!opt.inThread && !opt.hasPrev && !opt.hasNext) ? threadSize(s.id) : 1;
+    if (n > 1) body += `<button class="thread-btn" data-act="thread" data-id="${esc(s.id)}">${icon('replies')}타래 이어보기 · ${n}개</button>`;
     foot = `<div class="actions" aria-hidden="true"><span>${icon('reply')}${(S.children.get(s.id)||[]).length || ''}</span><span class="${canBoost ? '' : 'off'}">${icon(canBoost ? 'boost' : 'lock')}</span><span>${icon('star')}</span><span>${icon('bookmark')}</span><span>${icon('more')}</span></div>`;
   }
-  return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}">${head}${body}${foot}</article>`;
+  return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}"${s.foreign ? ' data-foreign="1"' : ''}>${head}${body}${foot}</article>`;
 }
 
 /* ---------- rendering: columns ---------- */
@@ -743,17 +870,14 @@ function renderMore(){
 }
 
 function openPost(id){
-  const s = S.byId.get(id);
+  const s = getStatus(id);
   const dv = $('#detail-view');
   if (!s){ dv.innerHTML = `<div class="col-head"><button data-act="back">${icon('back')}뒤로</button></div><div class="empty">이 아카이브에서 게시물을 찾지 못했어요.</div>`; return; }
-  const anc = []; let cur = s;
-  while (cur.inReplyToId && S.byId.has(cur.inReplyToId) && anc.length < 200){ cur = S.byId.get(cur.inReplyToId); anc.unshift(cur); }
-  const desc = [];
-  (function walk(p, depth){ for (const c of (S.children.get(p) || []).sort((a,b) => a._t - b._t)){ desc.push(c); if (depth < 200) walk(c.id, depth+1); } })(s.id, 0);
+  const {anc, desc} = threadOf(s.id);
   let h = `<div class="col-head"><button data-act="back">${icon('back')}뒤로</button><span>게시물</span>${panelBtn()}</div>`;
-  anc.forEach((a, i) => h += statusHTML(a, {hasNext:true, hasPrev:i > 0}));
-  h += statusHTML(s, {focused:true, hasPrev:anc.length > 0});
-  desc.forEach(d => h += statusHTML(d));
+  anc.forEach((a, i) => h += statusHTML(a, {hasNext:true, hasPrev:i > 0, inThread:true}));
+  h += statusHTML(s, {focused:true, hasPrev:anc.length > 0, hasNext:desc.length > 0, inThread:true});
+  desc.forEach((d, i) => h += statusHTML(d, {hasPrev:true, hasNext:i < desc.length - 1, inThread:true}));
   dv.innerHTML = h;
   hydrate(dv);
 }
@@ -794,19 +918,191 @@ function renderLeft(){
     <div><dt>첫 게시물</dt><dd class="date">${st.first ? esc(fmtDay(st.first)) : '-'}</dd></div><div><dt>마지막 게시물</dt><dd class="date">${st.last ? esc(fmtDay(st.last)) : '-'}</dd></div>`;
   $('#years').innerHTML = years.map(([y, n]) => `<button data-year="${y}" aria-pressed="${S.year === y}"><span>${y}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(3, n/ymax*100)}%"></span></span><span>${n.toLocaleString('ko-KR')}</span></button>`).join('');
   $('#tagcloud').innerHTML = tags.length ? tags.map(([t, n]) => `<button class="tagchip" data-tag="${esc(t)}">#${esc(t)}<b>${n}</b></button>`).join('') : '<p class="small">해시태그가 없어요.</p>';
+  const gb = $('#group-toggle'); if (gb) gb.setAttribute('aria-pressed', S.group);
+  const ac = $('#api-count'); if (ac){ const n = Object.keys(S.data.others).length; ac.textContent = n ? `지금까지 다른 사람 글 ${n.toLocaleString('ko-KR')}개를 불러왔어요.` : ''; }
   const loaded = !S.data.sample;
   document.querySelectorAll('[data-act="export"]').forEach(b => b.disabled = !loaded || !!EMBED);
 }
 function renderRight(){
   const c = {posts:'', replies:'', media:S.stats.media, likes:S.data.likes.length, bookmarks:S.data.bookmarks.length};
   $('#nav').innerHTML = TABS.map(t => `<a href="#${t.id}" data-tab="${t.id}">${icon(t.icon)}<span>${t.label}</span>${c[t.id] !== '' && c[t.id] != null ? `<span class="count">${Number(c[t.id]).toLocaleString('ko-KR')}</span>` : ''}</a>`).join('')
-    + (EMBED ? '' : `<hr><button data-act="open">${icon('folder')}<span>아카이브 열기</span></button><button data-act="export"${S.data.sample ? ' disabled' : ''}>${icon('download')}<span>HTML로 내보내기</span></button>`);
+    + (EMBED ? '' : `<hr><button data-act="help">${icon('help')}<span>사용 설명서</span></button><button data-act="open">${icon('folder')}<span>아카이브 열기</span></button><button data-act="export"${S.data.sample ? ' disabled' : ''}>${icon('download')}<span>HTML로 내보내기</span></button>`);
 }
 function renderBanner(){
   const b = $('#banner');
   if (EMBED){ b.hidden = true; return; }
   if (S.data.sample){ b.hidden = false; b.innerHTML = `<p>지금은 <b>예시 데이터</b>예요. 마스토돈에서 받은 아카이브 zip을 이 화면에 끌어다 놓거나 직접 선택하세요.</p><button class="btn" data-act="open">${icon('folder')}아카이브 열기</button>`; }
   else b.hidden = true;
+}
+
+/* ---------- inline thread ---------- */
+function expandThread(art, id){
+  const s = getStatus(id); if (!s) return;
+  const {anc, desc} = threadOf(id);
+  const items = [...anc, s, ...desc];
+  const w = document.createElement('div'); w.className = 'thread-block'; w.dataset.root = id;
+  w.innerHTML = items.map((x, i) => statusHTML(x, {hasPrev:i > 0, hasNext:i < items.length - 1, inThread:true})).join('')
+    + `<div class="thread-fold"><span class="small">타래 ${items.length}개</span><button class="linkbtn" data-act="unthread">타래 접기</button></div>`;
+  hydrate(w); art.replaceWith(w);
+}
+function collapseThread(w){
+  const tmp = document.createElement('div'); tmp.innerHTML = statusHTML(getStatus(w.dataset.root)); hydrate(tmp);
+  const el = tmp.firstElementChild; w.replaceWith(el);
+  if (el.getBoundingClientRect().top < 0) el.scrollIntoView({block:'start'});
+}
+
+/* ---------- fetch conversations from the instance API ---------- */
+const API = {token:'', running:false, stop:false};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+function ownOrigin(){ try { return new URL(S.data.actor.id).origin; } catch(e){ return ''; } }
+async function apiGet(path, onWait){
+  const headers = {Accept:'application/json'};
+  if (API.token) headers.Authorization = 'Bearer ' + API.token;
+  for (let attempt = 0; attempt < 5; attempt++){
+    let r;
+    try { r = await fetch(ownOrigin() + path, {headers, credentials:'omit'}); }
+    catch(e){ const err = new Error(window.self !== window.top ? '미리보기 화면에서는 다른 서버에 접속할 수 없어요. 받은 HTML 파일을 내 컴퓨터에서 열어 주세요.' : `${ownOrigin().replace(/^https?:\/\//,'')}에 연결하지 못했어요. 인스턴스가 닫혔거나 인터넷 연결에 문제가 있을 수 있어요.`); err.fatal = true; throw err; }
+    if (r.status === 429){
+      const reset = r.headers.get('X-RateLimit-Reset');
+      const wait = Math.min(300000, Math.max(5000, reset ? new Date(reset) - Date.now() + 1000 : 60000));
+      if (onWait) onWait(wait); await sleep(wait); continue;
+    }
+    if (r.status === 404 || r.status === 410) return null;
+    if (r.status === 401 || r.status === 403){ const err = new Error(API.token ? '토큰이 맞지 않거나 권한이 부족해요. read:statuses 권한이 있는 토큰인지 확인해 주세요.' : '이 인스턴스는 로그인 없이 글을 불러올 수 없게 되어 있어요. 아래에 액세스 토큰을 넣고 다시 시도해 주세요.'); err.fatal = true; throw err; }
+    if (!r.ok){ if (attempt < 2){ await sleep(3000); continue; } throw new Error('서버 오류 (' + r.status + ')'); }
+    return r.json();
+  }
+  throw new Error('요청이 너무 많다고 해요. 잠시 뒤 다시 시도해 주세요.');
+}
+function mergeConvo(order, parent){
+  const hits = new Set(order.map(x => S.convOf.get(x)).filter(Boolean));
+  const m = {order:[], parent:{}};
+  for (const c of hits){ m.order.push(...c.order); Object.assign(m.parent, c.parent); }
+  m.order = [...new Set([...m.order, ...order])]; Object.assign(m.parent, parent);
+  S.data.convos = S.data.convos.filter(c => !hits.has(c)); S.data.convos.push(m);
+  for (const x of m.order) S.convOf.set(x, m);
+}
+async function resolveApiId(local, onWait){
+  if (S.apiId.has(local)) return S.apiId.get(local);
+  const s = S.byId.get(local);
+  if (/^\d+$/.test(local) && !(S.noNumeric && S.noNumeric.has(local))) return local;
+  const q = s && (s.uri || s.url); if (!q) return null;
+  const r = await apiGet(`/api/v2/search?q=${encodeURIComponent(q)}&type=statuses&resolve=true&limit=1`, onWait);
+  const hit = r && r.statuses && r.statuses[0];
+  if (!hit) return null;
+  S.apiId.set(local, String(hit.id)); return String(hit.id);
+}
+async function fetchContext(id, onWait){
+  const apiId = await resolveApiId(id, onWait);
+  if (!apiId){ const e = new Error('서버에서 이 글을 찾지 못했어요 (지워졌거나 주소가 달라졌을 수 있어요).'); e.notFound = true; throw e; }
+  let ctx = await apiGet(`/api/v1/statuses/${encodeURIComponent(apiId)}/context`, onWait);
+  if (!ctx && apiId === id && !S.apiId.has(id)){
+    (S.noNumeric = S.noNumeric || new Set()).add(id);
+    return fetchContext(id, onWait);
+  }
+  if (!ctx) return 0;
+  const all = [...(ctx.ancestors || []), ...(ctx.descendants || [])];
+  const key = new Map([[String(apiId), id]]);
+  for (const st of all){
+    const own = st.uri && S.byUri.get(String(st.uri).replace(/\/+$/, '')) || st.url && S.byUri.get(String(st.url).replace(/\/+$/, ''));
+    key.set(String(st.id), own || 'r' + st.id);
+    if (own) S.apiId.set(own, String(st.id));
+  }
+  const K = x => key.get(String(x)) || 'r' + x;
+  const order = [...(ctx.ancestors || []).map(x => K(x.id)), id, ...(ctx.descendants || []).map(x => K(x.id))];
+  const parent = {}; let foreign = 0;
+  for (const st of all){
+    const k = K(st.id);
+    if (st.in_reply_to_id) parent[k] = K(st.in_reply_to_id);
+    if (!S.byId.has(k)){ if (!S.data.others[k]) foreign++; S.data.others[k] = fromApi(st, k); }
+  }
+  if (ctx.ancestors && ctx.ancestors.length) parent[id] = K(ctx.ancestors[ctx.ancestors.length - 1].id);
+  mergeConvo(order, parent);
+  return foreign;
+}
+function readToken(){ const el = $('#api-token'); API.token = el ? el.value.trim() : ''; }
+async function fetchOne(id, btn){
+  readToken();
+  const out = $('#ctx-status');
+  btn.disabled = true; if (out) out.textContent = '대화를 불러오는 중이에요…';
+  try {
+    const n = await fetchContext(id, w => { if (out) out.textContent = `요청이 많아 ${Math.ceil(w/1000)}초 기다리는 중…`; });
+    openPost(id); hydrate($('#detail-view'));
+    const o2 = $('#ctx-status'); if (o2) o2.textContent = n ? `다른 사람 글 ${n}개를 불러왔어요. 내보내기를 하면 함께 저장돼요.` : '더 불러올 다른 사람 글이 없었어요.';
+    renderLeft();
+  } catch(e){ const o2 = $('#ctx-status'); if (o2){ o2.className = 'err'; o2.textContent = e.message; } btn.disabled = false; }
+}
+async function fetchAll(){
+  if (API.running){ API.stop = true; return; }
+  readToken();
+  const scope = $('#api-scope').value, prog = $('#api-progress'), btn = $('#api-go');
+  const roots = (s) => !s.inReplyToId;
+  let cand = S.data.statuses.filter(s => s.kind === 'post' && !S.convOf.has(s.id)
+    && (scope === 'all' || s.inReplyTo || S.children.has(s.id))
+    && (API.token || s.visibility === 'public' || s.visibility === 'unlisted'));
+  const skipped = API.token ? 0 : S.data.statuses.filter(s => s.kind === 'post' && (s.visibility === 'private' || s.visibility === 'direct') && (scope === 'all' || s.inReplyTo || S.children.has(s.id))).length;
+  cand.sort((a,b) => (roots(b) - roots(a)) || (a._t - b._t));
+  if (!cand.length){ prog.className = 'small'; prog.textContent = '새로 불러올 게시물이 없어요.' + (skipped ? ` 비공개 글 ${skipped}개는 토큰이 있어야 불러올 수 있어요.` : ''); return; }
+  API.running = true; API.stop = false; btn.textContent = '멈추기'; prog.className = 'small';
+  let done = 0, got = 0, err = null, fails = 0, lastErr = '';
+  const t0 = Date.now();
+  for (const s of cand){
+    if (API.stop) break;
+    if (S.convOf.has(s.id)){ done++; continue; }
+    const left = cand.length - done;
+    prog.textContent = `${done.toLocaleString('ko-KR')} / ${cand.length.toLocaleString('ko-KR')} 확인 · 다른 사람 글 ${got.toLocaleString('ko-KR')}개 · 남은 시간 약 ${Math.max(1, Math.ceil(left * 1.15 / 60))}분`;
+    try { got += await fetchContext(s.id, w => { prog.textContent = `요청 한도에 걸려 ${Math.ceil(w/1000)}초 기다리는 중… (${done} / ${cand.length})`; }); }
+    catch(e){ if (e.fatal){ err = e; break; } fails++; lastErr = e.message; if (done === 0 && fails >= 3 && cand.length > 5){ err = new Error('처음 몇 개가 모두 실패했어요: ' + lastErr + ' [문제 진단]을 눌러 확인해 주세요.'); break; } }
+    done++;
+    await sleep(1100);
+  }
+  API.running = false; btn.textContent = '대화 불러오기 시작';
+  const mins = Math.round((Date.now() - t0) / 60000);
+  if (err){ prog.className = 'err'; prog.textContent = err.message + (got ? ` (그 전까지 다른 사람 글 ${got}개는 불러왔어요.)` : ''); }
+  else prog.textContent = `${API.stop ? '멈췄어요. ' : '다 불러왔어요. '}게시물 ${done.toLocaleString('ko-KR')}개를 확인해서 다른 사람 글 ${got.toLocaleString('ko-KR')}개를 가져왔어요${mins ? ` (${mins}분)` : ''}. 내보내기를 하면 함께 저장돼요.` + (skipped ? ` 비공개 글 ${skipped}개는 토큰이 없어서 건너뛰었어요.` : '') + (fails ? ` ${fails}개는 실패했어요 (${lastErr}).` : '');
+  renderLeft(); refreshList();
+}
+
+/* ---------- help ---------- */
+function openHelp(sec){
+  const m = $('#help-modal'), body = $('#help-body'), tpl = document.getElementById('mav-help');
+  if (!m || !tpl) return;
+  if (!body.childElementCount) body.append(tpl.content.cloneNode(true));
+  m.hidden = false;
+  const card = m.querySelector('.modal-card');
+  const el = sec && document.getElementById(sec);
+  if (el) el.scrollIntoView({block:'start'}); else card.scrollTop = 0;
+}
+
+/* ---------- diagnostics ---------- */
+async function diagnose(){
+  const box = $('#diag-text'); $('#diag-modal').hidden = false; box.value = '확인하는 중이에요…';
+  readToken();
+  const d = S.data, L = [];
+  const posts = d.statuses.filter(x => x.kind === 'post');
+  const replies = posts.filter(x => x.inReplyTo);
+  const selfR = posts.filter(x => x.inReplyToId);
+  const host = (() => { try { return new URL(d.actor.id).host; } catch(e){ return '?'; } })();
+  const sameHost = replies.filter(x => { try { return new URL(x.inReplyTo).host === host; } catch(e){ return false; } });
+  L.push(`뷰어 버전: 3`, `계정 주소: ${d.actor.id}`, `게시물 ${posts.length} / 부스트 ${d.statuses.length - posts.length}`);
+  L.push(`답글 ${replies.length}개 중 내 서버 글에 단 답글 ${sameHost.length}개, 그중 내 글로 연결된 것 ${selfR.length}개`);
+  L.push(`글 ID 예시: ${posts.slice(0,3).map(x => x.uri).join('  ')}`);
+  L.push(`글 주소 예시: ${posts.slice(0,2).map(x => x.url).join('  ')}`);
+  const un = sameHost.filter(x => !x.inReplyToId).slice(0,3).map(x => x.inReplyTo);
+  if (un.length) L.push(`연결 안 된 답글 대상 예시: ${un.join('  ')}`);
+  L.push(`공개 범위: ${Object.entries(S.stats.vis).map(([k,v]) => k + ' ' + v).join(', ')}`);
+  L.push(`토큰 입력: ${API.token ? '있음' : '없음'}`);
+  try {
+    const inst = await apiGet('/api/v1/instance');
+    L.push(`서버 응답: ${inst ? (inst.uri || inst.domain || '') + ' · ' + (inst.version || '버전 정보 없음') : '없음'}`);
+  } catch(e){ L.push('서버 연결 실패: ' + e.message); }
+  const test = replies[0] || posts[0];
+  if (test){
+    try { const id = await resolveApiId(test.id); L.push(`글 찾기 테스트: 아카이브 ID ${test.id} → 서버 ID ${id || '찾지 못함'}`);
+      if (id){ const c = await apiGet(`/api/v1/statuses/${id}/context`); L.push(`대화 테스트: ${c ? `앞 ${c.ancestors.length}개 / 뒤 ${c.descendants.length}개` : '없음(404)'}`); } }
+    catch(e){ L.push('글 찾기 테스트 실패: ' + e.message); }
+  }
+  box.value = L.join('\n');
 }
 
 /* ---------- left panel toggle ---------- */
@@ -821,7 +1117,7 @@ function setLeftHidden(h){
 /* ---------- lightbox ---------- */
 const LB = {items:[], i:0};
 function openLightbox(sid, idx){
-  const s = S.byId.get(sid); if (!s) return;
+  const s = getStatus(sid); if (!s) return;
   LB.items = s.attachments.filter(a => a.type === 'image' || a.type === 'video'); LB.i = idx; LB.sid = sid;
   $('#lb').hidden = false; showLB(); $('#lb .lb-close').focus();
 }
@@ -829,7 +1125,8 @@ function showLB(){
   const a = LB.items[LB.i], stage = $('#lb .lb-stage');
   stage.innerHTML = a.type === 'video' ? `<video controls autoplay playsinline data-media="${esc(a.path)}"></video>` : `<img alt="${esc(a.alt)}" data-media="${esc(a.path)}">`;
   hydrate(stage);
-  $('#lb .lb-cap').innerHTML = `${a.alt ? esc(a.alt) + '<br>' : ''}<a href="#post-${esc(LB.sid)}" data-act="lbpost">게시물 보기</a>${LB.items.length > 1 ? ` · ${LB.i+1} / ${LB.items.length}` : ''}`;
+  const fs = getStatus(LB.sid);
+  $('#lb .lb-cap').innerHTML = `${a.alt ? esc(a.alt) + '<br>' : ''}${fs && fs.foreign ? `<a href="${esc(fs.url)}" target="_blank" rel="noopener noreferrer">원래 게시물 보기</a>` : `<a href="#post-${esc(LB.sid)}" data-act="lbpost">게시물 보기</a>`}${LB.items.length > 1 ? ` · ${LB.i+1} / ${LB.items.length}` : ''}`;
   $('#lb .lb-prev').hidden = $('#lb .lb-next').hidden = LB.items.length < 2;
 }
 function closeLB(){ $('#lb').hidden = true; $('#lb .lb-stage').innerHTML = ''; }
@@ -884,7 +1181,12 @@ function exportPayload(){
   const vis = {}; document.querySelectorAll('#export-modal [data-exvis]').forEach(c => vis[c.dataset.exvis] = c.checked);
   const withLinks = $('#ex-links').checked;
   const statuses = S.data.statuses.filter(s => vis[s.visibility]).map(s => { const c = Object.assign({}, s); delete c._t; delete c._text; return c; });
-  return {actor:S.data.actor, statuses, likes:withLinks ? S.data.likes : [], bookmarks:withLinks ? S.data.bookmarks : [], exportedAt:new Date().toISOString()};
+  const others = {}, convos = [];
+  if ($('#ex-others').checked){
+    for (const [k, o] of Object.entries(S.data.others)) if (vis[o.visibility]){ const c = Object.assign({}, o); delete c._t; delete c._text; others[k] = JSON.parse(JSON.stringify(c)); }
+    for (const c of S.data.convos) convos.push({order:c.order, parent:c.parent});
+  }
+  return {actor:S.data.actor, statuses, others, convos, likes:withLinks ? S.data.likes : [], bookmarks:withLinks ? S.data.bookmarks : [], exportedAt:new Date().toISOString()};
 }
 function saveBlob(blob, name){
   const u = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -896,9 +1198,8 @@ async function doExport(htmlOnly){
   go.disabled = go2.disabled = true;
   try {
     const payload = exportPayload();
-    const html = buildExportHTML(payload);
     const base = 'mastodon-archive-' + (S.data.actor.username || 'export');
-    if (htmlOnly){ saveBlob(new Blob([html], {type:'text/html'}), 'index.html'); prog.textContent = 'index.html을 저장했어요.'; return; }
+    if (htmlOnly){ const html = buildExportHTML(payload); saveBlob(new Blob([html], {type:'text/html'}), 'index.html'); prog.textContent = 'index.html을 저장했어요.'; return; }
     if (typeof zip === 'undefined') throw new Error('zip 라이브러리를 불러오지 못했어요.');
     zip.configure({useWebWorkers:false});
     const paths = new Set();
@@ -907,6 +1208,28 @@ async function doExport(htmlOnly){
     for (const s of payload.statuses){ s.attachments.forEach(a => add(a.path)); Object.values(s.emojis || {}).forEach(add); }
     Object.values(payload.actor.emojis || {}).forEach(add);
     const w = new zip.ZipWriter(new zip.BlobWriter('application/zip'));
+    let remoteOk = 0, remoteFail = 0;
+    if ($('#ex-remote').checked && Object.keys(payload.others).length){
+      const map = new Map(), refs = [];
+      const want = (obj, key) => { const u = obj[key]; if (u && /^https?:/i.test(u)){ refs.push([obj, key]); if (!map.has(u)) map.set(u, null); } };
+      for (const o of Object.values(payload.others)){
+        want(o.author, 'avatar'); o.attachments.forEach(a => want(a, 'path'));
+        for (const k of Object.keys(o.emojis || {})) want(o.emojis, k);
+        for (const k of Object.keys(o.author.emojis || {})) want(o.author.emojis, k);
+      }
+      let i = 0;
+      for (const u of map.keys()){
+        i++; prog.textContent = `다른 사람 이미지 받는 중… ${i.toLocaleString('ko-KR')} / ${map.size.toLocaleString('ko-KR')}`;
+        try {
+          const r = await fetch(u, {mode:'cors', credentials:'omit'}); if (!r.ok) throw 0;
+          const b = await r.blob(); const x = new URL(u);
+          const local = ('remote/' + x.host + x.pathname).replace(/\/+/g, '/');
+          await w.add(local, new zip.BlobReader(b), {level:0}); map.set(u, local); remoteOk++;
+        } catch(e){ remoteFail++; }
+      }
+      for (const [obj, key] of refs){ const l = map.get(obj[key]); if (l) obj[key] = l; }
+    }
+    const html = buildExportHTML(payload);
     await w.add('index.html', new zip.TextReader(html));
     let i = 0, miss = 0;
     for (const p of paths){
@@ -918,7 +1241,7 @@ async function doExport(htmlOnly){
     prog.textContent = 'zip 파일을 마무리하는 중…';
     const out = await w.close();
     saveBlob(out, base + '.zip');
-    prog.textContent = `${base}.zip을 저장했어요 (게시물 ${payload.statuses.length.toLocaleString('ko-KR')}개, 미디어 ${(paths.size - miss).toLocaleString('ko-KR')}개).` + (miss ? ` 아카이브에 없는 미디어 ${miss}개는 빠졌어요.` : '');
+    prog.textContent = `${base}.zip을 저장했어요 (게시물 ${payload.statuses.length.toLocaleString('ko-KR')}개, 미디어 ${(paths.size - miss).toLocaleString('ko-KR')}개).` + (miss ? ` 아카이브에 없는 미디어 ${miss}개는 빠졌어요.` : '') + (remoteOk || remoteFail ? ` 다른 사람 이미지 ${remoteOk}개를 담았어요.` + (remoteFail ? ` ${remoteFail}개는 서버가 막아서 원래 주소로 남겼어요.` : '') : '');
   } catch(e){ console.error(e); prog.textContent = '내보내지 못했어요: ' + (e.message || e); }
   finally { go.disabled = go2.disabled = false; }
 }
@@ -932,18 +1255,29 @@ function buildShell(){
 <div class="layout">
   <aside class="side side-left collapsed" id="left">
     <div class="topbar"><div class="brand"><span class="logo">${icon('mastodon')}</span><span>아카이브 뷰어</span></div>
-      <div class="acts"><button class="btn ghost side-toggle" data-act="toggle-side" aria-expanded="false">${icon('filter')}메뉴</button></div></div>
+      <div class="acts">${EMBED ? '' : `<button class="btn ghost" data-act="help" aria-label="사용 설명서">?</button>`}<button class="btn ghost side-toggle" data-act="toggle-side" aria-expanded="false">${icon('filter')}메뉴</button></div></div>
     <div class="brand"><span class="logo">${icon('mastodon')}</span><span>아카이브 뷰어<small>마스토돈 데이터 내보내기 보기</small></span></div>
     <label class="search"><span hidden>게시물 검색</span>${icon('search')}<input id="search-input" type="search" placeholder="게시물 검색" autocomplete="off"></label>
     ${EMBED ? '' : `<section class="panel collapsible" id="loader"><h3>아카이브 열기</h3>
       <div class="drop" id="dropzone"><p>아카이브 파일(.zip, .tar.gz)을<br>여기에 끌어다 놓으세요</p>
         <button class="btn block" data-act="open">${icon('folder')}파일 선택</button>
         <button class="linkbtn" data-act="open-dir">압축을 푼 폴더 선택하기</button></div>
-      <p class="small" style="margin-top:8px">파일은 이 브라우저 안에서만 읽어요. 어디에도 업로드되지 않아요.</p>
+      <p class="small" style="margin-top:8px">파일은 이 브라우저 안에서만 읽어요. 어디에도 업로드되지 않아요. <button class="linkbtn" data-act="help">사용 설명서</button></p>
       <p id="load-status" class="small" role="status" aria-live="polite"></p>
       <button class="btn ghost block" data-act="export" style="margin-top:10px">${icon('download')}HTML로 내보내기</button></section>`}
     <section class="panel collapsible"><h3>공개 범위</h3><div class="chips" id="vis-chips"></div>
+      <div class="chips" style="margin-top:10px"><button class="chip" id="group-toggle" data-act="group" aria-pressed="true">${icon('replies')}이어 쓴 타래 하나로 묶기</button></div>
       <div class="row" style="margin-top:12px"><label for="sort" class="small">정렬</label><select id="sort"><option value="new">최신순</option><option value="old">오래된순</option></select></div></section>
+    ${EMBED ? '' : `<section class="panel collapsible" id="api-panel"><h3>다른 사람 글 함께 백업</h3>
+      <p class="small">내 인스턴스에 남아 있는 대화를 불러와서, 내 글에 달린 답글이나 내가 답한 원래 글까지 같이 저장해요. 인스턴스와 계정이 아직 살아 있어야 해요.</p>
+      <div class="row" style="margin-top:10px"><select id="api-scope" aria-label="불러올 범위"><option value="threads">답글과 타래만 (빠름)</option><option value="all">모든 내 글 (느림)</option></select></div>
+      <details style="margin-top:10px"><summary class="small" style="cursor:pointer">비공개 글도 불러오기 (액세스 토큰)</summary>
+        <p class="small" style="margin:8px 0">인스턴스의 환경설정 → 개발 → 새 애플리케이션에서 <b>read:statuses</b> 권한으로 만든 액세스 토큰을 넣으세요. 이 페이지가 열려 있는 동안만 쓰이고 어디에도 저장되지 않아요. <button class="linkbtn" data-act="help" data-sec="h-token">토큰 만드는 법</button></p>
+        <input id="api-token" type="password" autocomplete="off" placeholder="액세스 토큰" style="width:100%;background:var(--col);border:1px solid var(--line);border-radius:6px;padding:8px 10px"></details>
+      <button class="btn block" id="api-go" data-act="fetchall" style="margin-top:10px">대화 불러오기 시작</button>
+      <p class="small" id="api-progress" role="status" aria-live="polite" style="margin-top:8px"></p>
+      <p class="small" id="api-count"></p>
+      <button class="linkbtn" data-act="diagnose" style="margin-top:6px">문제 진단</button></section>`}
     <section class="panel collapsible"><h3>요약</h3><dl class="stats" id="stats"></dl><div class="years" id="years"></div></section>
     <section class="panel collapsible"><h3>자주 쓴 해시태그</h3><div class="chips" id="tagcloud"></div></section>
     ${EMBED ? `<p class="small collapsible" style="padding:0 4px">${esc(fmtDay(EMBED.exportedAt))}에 만든 아카이브예요.</p>` : ''}
@@ -973,10 +1307,22 @@ function buildShell(){
     <p>지금 보는 화면 그대로 index.html과 미디어 파일을 zip 하나에 담아요. 압축을 풀고 index.html을 열면 인터넷 연결 없이도 볼 수 있고, 웹 호스팅에 그대로 올려도 돼요.</p>
     <fieldset><legend>포함할 공개 범위</legend>${Object.entries(VIS).map(([k, v]) => `<label><input type="checkbox" id="ex-vis-${k}" data-exvis="${k}" ${k === 'direct' ? '' : 'checked'}>${icon(v.icon)}${v.label}</label>`).join('')}</fieldset>
     <label><input type="checkbox" id="ex-links" checked>좋아요·북마크 목록 포함</label>
+    <label><input type="checkbox" id="ex-others" checked>불러온 다른 사람 글 포함</label>
+    <label><input type="checkbox" id="ex-remote" checked>다른 사람 글의 프로필 사진·이미지도 zip에 담기</label>
     <p class="note" id="ex-frame-note" hidden>미리보기 화면 안에서는 파일 저장이 막혀 있어요. 받은 HTML 파일을 내 컴퓨터에서 브라우저로 열어 내보내 주세요.</p>
     <p class="note">공개 사이트로 올릴 때는 팔로워 전용·개인적인 멘션을 빼는 걸 권해요.</p>
     <div class="progress" id="ex-progress" role="status" aria-live="polite"></div>
     <div class="acts"><button class="btn ghost" data-act="exclose">닫기</button><button class="btn ghost" id="ex-html" title="압축을 푼 아카이브 폴더 안에 넣어서 쓰는 파일">index.html만 받기</button><button class="btn" id="ex-go">${icon('download')}zip 만들기</button></div>
+  </div>
+</div>
+${EMBED ? '' : `<div class="modal" id="help-modal" hidden role="dialog" aria-modal="true" aria-labelledby="help-title">
+  <div class="modal-card help"><div class="help-head"><h2 id="help-title">사용 설명서</h2><button class="btn ghost" data-act="helpclose">닫기</button></div><div class="help-body" id="help-body"></div></div>
+</div>`}
+<div class="modal" id="diag-modal" hidden role="dialog" aria-modal="true" aria-labelledby="diag-title">
+  <div class="modal-card"><h2 id="diag-title">문제 진단</h2>
+    <p>아카이브 구조와 서버 응답을 확인한 결과예요. 글 내용은 들어 있지 않아요. 잘 안 되면 이 내용을 복사해서 알려 주세요.</p>
+    <textarea id="diag-text" readonly rows="12" style="width:100%;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:6px;padding:10px;resize:vertical"></textarea>
+    <div class="acts"><button class="btn ghost" data-act="diagclose">닫기</button><button class="btn" data-act="diagcopy">복사</button></div>
   </div>
 </div>
 ${EMBED ? '' : `<input type="file" id="f-zip" accept=".zip,.gz,.tgz,.tar,application/zip,application/gzip" hidden>
@@ -986,6 +1332,8 @@ ${EMBED ? '' : `<input type="file" id="f-zip" accept=".zip,.gz,.tgz,.tar,applica
 
 function bind(){
   document.addEventListener('click', e => {
+    const hl = e.target.closest('[data-help]');
+    if (hl){ e.preventDefault(); const sec = document.getElementById(hl.dataset.help); if (sec) sec.scrollIntoView({block:'start'}); return; }
     const t = e.target.closest('[data-act],[data-vis],[data-year],[data-tag],a.hashtag,a[rel~="tag"]');
     if (t){
       const act = t.dataset.act;
@@ -1011,6 +1359,17 @@ function bind(){
         case 'back': location.hash = S.tab; return;
         case 'clear': S.tag = null; S.year = null; S.q = ''; $('#search-input').value = ''; renderLeft(); refreshList(); return;
         case 'showall': for (const k in S.vis) S.vis[k] = true; renderLeft(); refreshList(); return;
+        case 'thread': e.stopPropagation(); expandThread(t.closest('.status'), t.dataset.id); return;
+        case 'unthread': collapseThread(t.closest('.thread-block')); return;
+        case 'group': S.group = !S.group; t.setAttribute('aria-pressed', S.group); refreshList(); return;
+        case 'fetchctx': fetchOne(t.dataset.id, t); return;
+        case 'fetchall': fetchAll(); return;
+        case 'diagnose': diagnose(); return;
+        case 'help': openHelp(t.dataset.sec); return;
+        case 'helpclose': $('#help-modal').hidden = true; return;
+        case 'diagclose': $('#diag-modal').hidden = true; return;
+        case 'diagcopy': { const ta = $('#diag-text'); const done = () => { t.textContent = '복사했어요'; setTimeout(() => t.textContent = '복사', 1500); };
+          try { navigator.clipboard.writeText(ta.value).then(done, () => { ta.select(); }); } catch(err){ ta.select(); } return; }
         case 'toggle-left': setLeftHidden(!leftHidden()); return;
         case 'toggle-side': { const l = $('#left'); l.classList.toggle('collapsed'); t.setAttribute('aria-expanded', !l.classList.contains('collapsed')); return; }
         case 'export': if (t.disabled) return; $('#export-modal').hidden = false; $('#ex-progress').textContent = ''; $('#ex-frame-note').hidden = window.self === window.top; return;
@@ -1018,20 +1377,21 @@ function bind(){
       }
       return;
     }
-    const st = e.target.closest('.status[data-id]:not(.focused)');
+    const st = e.target.closest('.status[data-id]:not(.focused):not([data-foreign])');
     if (st && !e.target.closest('a,button,video,audio,.gallery') && !window.getSelection().toString()){
       if (st.dataset.kind === 'boost') return;
       location.hash = 'post-' + st.dataset.id;
     }
   });
   $('#lb').addEventListener('click', e => { if (e.target === e.currentTarget || e.target.classList.contains('lb-stage')) closeLB(); });
+  if ($('#help-modal')) $('#help-modal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.hidden = true; });
   $('#export-modal').addEventListener('click', e => { if (e.target === e.currentTarget) e.currentTarget.hidden = true; });
   document.addEventListener('keydown', e => {
     if (!$('#lb').hidden){
       if (e.key === 'Escape') closeLB();
       else if (e.key === 'ArrowLeft' && LB.items.length > 1){ LB.i = (LB.i - 1 + LB.items.length) % LB.items.length; showLB(); }
       else if (e.key === 'ArrowRight' && LB.items.length > 1){ LB.i = (LB.i + 1) % LB.items.length; showLB(); }
-    } else if (e.key === 'Escape' && !$('#export-modal').hidden) $('#export-modal').hidden = true;
+    } else if (e.key === 'Escape'){ for (const id of ['#export-modal', '#help-modal', '#diag-modal']){ const m = $(id); if (m) m.hidden = true; } }
   });
   $('#ex-go').addEventListener('click', () => doExport(false));
   $('#ex-html').addEventListener('click', () => doExport(true));
