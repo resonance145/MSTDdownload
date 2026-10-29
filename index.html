@@ -318,12 +318,17 @@ details summary{list-style-position:inside}
 <li>게시물을 누르면 앞뒤 대화가 이어진 상세 화면이 열려요.</li>
 <li>왼쪽 패널에서 검색, 공개 범위, 정렬, 연도, 해시태그로 거를 수 있어요. 가운데 칼럼 오른쪽 위 아이콘으로 왼쪽 패널을 숨길 수 있어요.</li>
 <li>좋아요·북마크·부스트는 아카이브에 원래 글 주소만 저장돼서 링크로 보여줘요.</li></ul></section>
-<section id="h-others"><h3>4. 다른 사람 글 함께 백업</h3>
-<p>아카이브에는 내 글만 들어 있어요. 내 글에 달린 남의 답글이나 내가 답한 원래 글은 내 인스턴스 서버에 물어서 가져와요.</p>
+<section id="h-others"><h3>4. API로 내용 보태기</h3>
+<p>아카이브 zip에는 내 글과 미디어만 들어 있고, 부스트·좋아요·북마크는 주소만 남아요. 빠진 내용은 내 인스턴스 서버에 물어서 채워요.</p>
+<ul><li><b>부스트한 글 원문</b>: 부스트 자리에 원래 글이 그대로 보여요.</li>
+<li><b>좋아요한 글 본문 · 북마크한 글 본문</b>: 좋아요·북마크 탭에 주소 대신 글이 보여요. 아카이브 뒤에 새로 누른 좋아요·북마크도 함께 들어와요. 토큰이 꼭 필요해요.</li>
+<li><b>답글·타래 속 다른 사람 글</b>: 내 글에 달린 남의 답글이나 내가 답한 원래 글이 타래 안에 같이 보여요.</li></ul>
+<p style="margin-top:8px">왼쪽 <b>API로 내용 보태기</b>에서 항목을 고르고 <b>불러오기 시작</b>을 눌러요.</p>
 <ul><li>인스턴스와 내 계정이 아직 살아 있어야 해요.</li>
-<li>왼쪽 <b>다른 사람 글 함께 백업</b>에서 범위를 고르고 <b>대화 불러오기 시작</b>을 눌러요. 게시물 하나만 받으려면 글을 열고 <b>다른 사람 글까지 불러오기</b>를 누르세요.</li>
-<li>서버 요청 한도 때문에 글 하나에 1초쯤 걸려요. 답글 500개면 10분 정도예요. 중간에 <b>멈추기</b>를 눌러도 그때까지 받은 글은 남아요.</li>
-<li><b>팔로워 전용·개인적인 멘션 글</b>의 대화는 액세스 토큰이 있어야 받을 수 있어요. 아래 5번을 보세요.</li>
+<li>대화 게시물 하나만 받으려면 글을 열고 <b>다른 사람 글까지 불러오기</b>를 누르세요.</li>
+<li>부스트·좋아요·북마크는 40개씩 한꺼번에 받아서 빨라요. 대화는 글 하나에 1초쯤 걸려서 답글 500개면 10분 정도예요. 중간에 <b>멈추기</b>를 눌러도 그때까지 받은 내용은 남아요.</li>
+<li>좋아요·북마크, 그리고 <b>팔로워 전용·개인적인 멘션 글</b>의 대화는 액세스 토큰이 있어야 받을 수 있어요. 아래 5번을 보세요.</li>
+<li>지워진 글이나 내 서버가 모르는 글은 받을 수 없어서 주소로 남아요.</li>
 <li>내 서버에 전달되지 않은 다른 서버의 답글은 빠질 수 있어요.</li>
 <li>불러온 글은 페이지를 닫으면 사라져요. 다 받으면 바로 내보내기를 하세요.</li></ul></section>
 <section id="h-token"><h3>5. 액세스 토큰 만들기</h3>
@@ -331,9 +336,9 @@ details summary{list-style-position:inside}
 <li><b>애플리케이션 이름</b>: 아무거나 괜찮아요. 예: <code>아카이브 백업</code></li>
 <li><b>애플리케이션 웹사이트</b>: 비워 두세요. 꼭 넣어야 하면 내 프로필 주소를 넣으면 돼요.</li>
 <li><b>리다이렉트 URI</b>: 기본값 <code>urn:ietf:wg:oauth:2.0:oob</code>를 그대로 두세요. 비어 있으면 이 값을 넣으세요. 이 방식에서는 리다이렉트를 쓰지 않아요.</li>
-<li><b>범위(권한)</b>: 체크된 것을 모두 해제하고 <code>read:statuses</code> 하나만 체크하세요. 목록에 없으면 <code>read</code>를 체크해요. 읽기 권한만 있어서 토큰이 새어 나가도 글을 쓰거나 지울 수 없어요.</li>
+<li><b>범위(권한)</b>: 체크된 것을 모두 해제하고 <code>read</code> 하나만 체크하세요. 읽기 권한만 있어서 토큰이 새어 나가도 글을 쓰거나 지울 수 없어요. 더 좁히고 싶으면 <code>read:statuses</code>, <code>read:accounts</code>, <code>read:favourites</code>, <code>read:bookmarks</code> 네 개를 체크해도 돼요.</li>
 <li><b>제출</b>을 누르고, 목록에 생긴 앱 이름을 눌러 들어가요.</li>
-<li><b>액세스 토큰</b> 값만 복사해서 왼쪽 <b>비공개 글도 불러오기 (액세스 토큰)</b> 칸에 붙여 넣어요. 클라이언트 키와 비밀키는 필요 없어요.</li>
+<li><b>액세스 토큰</b> 값만 복사해서 왼쪽 <b>API로 내용 보태기 → 액세스 토큰</b> 칸에 붙여 넣어요. 클라이언트 키와 비밀키는 필요 없어요.</li>
 <li>백업이 끝나면 같은 화면에서 그 앱을 <b>삭제</b>하세요. 토큰도 함께 무효가 돼요.</li></ol>
 <p class="note">토큰은 비밀번호처럼 다뤄 주세요. 이 페이지는 토큰을 저장하지 않고, 내 인스턴스에 보내는 요청에만 써요. 다른 사람에게 보여주거나 채팅에 붙여 넣지 마세요.</p></section>
 <section id="h-export"><h3>6. HTML로 내보내기</h3>
@@ -342,7 +347,7 @@ details summary{list-style-position:inside}
 <li>타래 중간의 글을 빼면 그다음 글이 바로 앞 글에 이어 붙어요.</li>
 <li>zip을 풀고 <b>index.html</b>을 열면 인터넷 없이도 볼 수 있어요. 폴더째 웹 호스팅(GitHub Pages 등)에 올려도 돼요.</li>
 <li><b>index.html만 받기</b>는 미디어를 빼고 페이지만 저장해요. 압축을 푼 아카이브 폴더 안에 넣으면 사진도 같이 보여요.</li>
-<li>불러온 다른 사람 글과 그 사람들의 프로필 사진·이미지도 함께 담을 수 있어요. 서버가 막은 이미지는 원래 주소로 남아요.</li>
+<li>API로 불러온 부스트 원문, 좋아요·북마크 본문, 다른 사람 글과 그 사람들의 프로필 사진·이미지도 함께 담을 수 있어요. 서버가 막은 이미지는 원래 주소로 남아요.</li>
 <li>공개 사이트로 올릴 때는 팔로워 전용·개인적인 멘션을 빼는 걸 권해요.</li>
 <li>내보낸 사이트에는 아카이브 열기, 대화 불러오기, 이 설명서가 들어가지 않아요.</li></ul></section>
 <section id="h-trouble"><h3>7. 잘 안 될 때</h3>
@@ -658,7 +663,7 @@ const TABS = [
 
 function setData(d){
   S.data = d; S.byId = new Map(); S.children = new Map(); S.convOf = new Map();
-  d.others = d.others || {}; d.convos = d.convos || [];
+  d.others = d.others || {}; d.convos = d.convos || []; d.boostFull = d.boostFull || {}; d.likeFull = d.likeFull || {}; d.bookmarkFull = d.bookmarkFull || {};
   S.byUri = new Map(); S.apiId = S.apiId || new Map();
   for (const x of d.statuses){ if (x.uri) S.byUri.set(String(x.uri).replace(/\/+$/, ''), x.id); if (x.url) S.byUri.set(String(x.url).replace(/\/+$/, ''), x.id); }
   for (const c of d.convos) for (const x of c.order) S.convOf.set(x, c);
@@ -688,6 +693,7 @@ function setData(d){
 
 /* ---------- filtering ---------- */
 function textOf(s){
+  if (s.kind === 'boost' && s._text == null && S.data.boostFull && S.data.boostFull[s.id]){ const o = getStatus(S.data.boostFull[s.id]); if (o) return (s._text = textOf(o) + ' ' + (o.author ? (o.author.name + ' ' + o.author.handle).toLowerCase() : '') + ' ' + String(s.boostOf || '').toLowerCase()); }
   if (s._text == null) s._text = (plain(s.content) + ' ' + plain(s.summary) + ' ' + (s.poll ? s.poll.options.map(o=>o.name).join(' ') : '') + ' ' + s.attachments.map(a=>a.alt).join(' ') + ' ' + (s.boostOf||'')).toLowerCase();
   return s._text;
 }
@@ -710,10 +716,12 @@ function filtered(){
   out.sort((a,b) => S.sort === 'new' ? b._t - a._t : a._t - b._t);
   return out;
 }
+const normRef = u => String(u || '').replace(/[?#].*$/, '').replace(/\/+$/, '');
+function fullOf(u, tab){ const m = (tab || S.tab) === 'likes' ? S.data.likeFull : S.data.bookmarkFull; const k = m && m[normRef(u)]; return k ? getStatus(k) : null; }
 function filteredLinks(){
   const q = S.q.trim().toLowerCase();
   let l = S.tab === 'likes' ? S.data.likes : S.data.bookmarks;
-  if (q) l = l.filter(u => u.toLowerCase().includes(q));
+  if (q) l = l.filter(u => { if (u.toLowerCase().includes(q)) return true; const o = fullOf(u); return o ? q.split(/\s+/).every(w => textOf(o).includes(w)) : false; });
   return S.sort === 'new' ? l : [...l].reverse();
 }
 
@@ -804,8 +812,10 @@ function fromApi(st, key){
 }
 
 function statusHTML(s, opt={}){
+  if (s.kind === 'boost' && !opt.boostOf){ const k = S.data.boostFull && S.data.boostFull[s.id]; const o = k && getStatus(k); if (o) return statusHTML(o, Object.assign({}, opt, {boostOf:s})); }
   const A = s.author || S.data.actor;
-  const isEx = !EMBED && S.excluded && S.excluded.has(s.id);
+  const eid = opt.boostOf ? opt.boostOf.id : s.id;
+  const isEx = !EMBED && S.excluded && S.excluded.has(eid);
   const cls = ['status']; if (isEx) cls.push('excluded'); if (opt.focused) cls.push('focused'); if (opt.hasNext) cls.push('has-next'); if (opt.hasPrev) cls.push('has-prev');
   const href = s.foreign ? esc(s.url) + '" target="_blank" rel="noopener noreferrer' : '#post-' + esc(s.id);
   const time = `<div class="st-time"><a href="${href}" title="${esc(fmtFull(s.published))}"><time datetime="${esc(s.published)}">${esc(relTime(s.published))}</time></a>${visBadge(s.visibility)}</div>`;
@@ -823,15 +833,16 @@ function statusHTML(s, opt={}){
   else body += inner;
   let foot;
   if (opt.focused){
-    foot = `<div class="focus-meta"><time datetime="${esc(s.published)}">${esc(fmtFull(s.published))}</time><span>·</span>${visBadge(s.visibility)}<span>${esc((VIS[s.visibility]||VIS.public).label)}</span>${s.url ? `<span>·</span><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">원래 주소 ${icon('ext')}</a>` : ''}${!EMBED ? `<span>·</span><button class="linkbtn" data-act="exclude" data-id="${esc(s.id)}">${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}</button>` : ''}${(!EMBED && !s.foreign) ? `<span>·</span><button class="linkbtn" data-act="fetchctx" data-id="${esc(s.id)}">${S.convOf.has(s.id) ? '대화 다시 불러오기' : '다른 사람 글까지 불러오기'}</button>` : ''}</div><p class="small" id="ctx-status" role="status"></p>`;
+    foot = `<div class="focus-meta"><time datetime="${esc(s.published)}">${esc(fmtFull(s.published))}</time><span>·</span>${visBadge(s.visibility)}<span>${esc((VIS[s.visibility]||VIS.public).label)}</span>${s.url ? `<span>·</span><a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer">원래 주소 ${icon('ext')}</a>` : ''}${!EMBED ? `<span>·</span><button class="linkbtn" data-act="exclude" data-id="${esc(eid)}">${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}</button>` : ''}${(!EMBED && !s.foreign) ? `<span>·</span><button class="linkbtn" data-act="fetchctx" data-id="${esc(s.id)}">${S.convOf.has(s.id) ? '대화 다시 불러오기' : '다른 사람 글까지 불러오기'}</button>` : ''}</div><p class="small" id="ctx-status" role="status"></p>`;
   } else {
     const canBoost = s.visibility === 'public' || s.visibility === 'unlisted';
-    const n = (!opt.inThread && !opt.hasPrev && !opt.hasNext) ? threadSize(s.id) : 1;
+    const n = (!opt.inThread && !opt.boostOf && !opt.hasPrev && !opt.hasNext) ? threadSize(s.id) : 1;
     if (n > 1) body += `<button class="thread-btn" data-act="thread" data-id="${esc(s.id)}">${icon('replies')}타래 이어보기 · ${n}개</button>`;
-    foot = `<div class="actions" aria-hidden="true"><span>${icon('reply')}${(S.children.get(s.id)||[]).length || ''}</span><span class="${canBoost ? '' : 'off'}">${icon(canBoost ? 'boost' : 'lock')}</span><span>${icon('star')}</span><span>${icon('bookmark')}</span>${EMBED ? `<span>${icon('more')}</span>` : `<button class="ex-btn" data-act="exclude" data-id="${esc(s.id)}" aria-hidden="false" title="${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}" aria-label="${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}">${icon(isEx ? 'undo' : 'trash')}</button>`}</div>`;
+    foot = `<div class="actions" aria-hidden="true"><span>${icon('reply')}${(S.children.get(s.id)||[]).length || ''}</span><span class="${canBoost ? '' : 'off'}">${icon(canBoost ? 'boost' : 'lock')}</span><span>${icon('star')}</span><span>${icon('bookmark')}</span>${EMBED ? `<span>${icon('more')}</span>` : `<button class="ex-btn" data-act="exclude" data-id="${esc(eid)}" aria-hidden="false" title="${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}" aria-label="${isEx ? '내보내기에 다시 넣기' : '내보내기에서 빼기'}">${icon(isEx ? 'undo' : 'trash')}</button>`}</div>`;
   }
-  const exNote = !EMBED ? `<div class="ex-note"${isEx ? '' : ' hidden'}>${icon('trash')}<span>내보내기에서 빠지는 글이에요</span><button class="linkbtn" data-act="exclude" data-id="${esc(s.id)}">되돌리기</button></div>` : '';
-  return `<article class="${cls.join(' ')}" data-id="${esc(s.id)}"${s.foreign ? ' data-foreign="1"' : ''}>${exNote}${head}${body}${foot}</article>`;
+  const exNote = !EMBED ? `<div class="ex-note"${isEx ? '' : ' hidden'}>${icon('trash')}<span>내보내기에서 빠지는 글이에요</span><button class="linkbtn" data-act="exclude" data-id="${esc(eid)}">되돌리기</button></div>` : '';
+  const pre = opt.boostOf ? `<div class="prepend">${icon('boost')}<span>${sanitize(esc(S.data.actor.name), S.data.actor.emojis)}님이 부스트했습니다</span><span class="muted" style="font-weight:400">· ${esc(relTime(opt.boostOf.published))}</span></div>` : '';
+  return `<article class="${cls.join(' ')}" data-id="${esc(eid)}"${s.foreign || opt.boostOf ? ' data-foreign="1"' : ''}${opt.boostOf ? ' data-kind="boost"' : ''}>${pre}${exNote}${head}${body}${foot}</article>`;
 }
 
 /* ---------- rendering: columns ---------- */
@@ -872,7 +883,10 @@ function refreshList(){
     feed.innerHTML = `<div class="empty">아카이브에 ${S.tab === 'likes' ? '좋아요' : '북마크'} 목록이 없어요.</div>`; return;
   }
   if (!S.list.length){ feed.innerHTML = '<div class="empty">조건에 맞는 게시물이 없어요.</div>'; return; }
-  if (isLinks) feed.insertAdjacentHTML('beforeend', `<div class="filter-note"><span>아카이브에는 ${S.tab === 'likes' ? '좋아요한' : '북마크한'} 글의 주소만 저장돼요. 눌러서 원래 글을 열어 보세요.</span></div>`);
+  if (isLinks){
+    const full = S.list.filter(u => fullOf(u)).length, word = S.tab === 'likes' ? '좋아요한' : '북마크한';
+    feed.insertAdjacentHTML('beforeend', `<div class="filter-note"><span>${full ? `${word} 글 ${S.list.length.toLocaleString('ko-KR')}개 중 ${full.toLocaleString('ko-KR')}개는 본문까지 불러왔어요.${full < S.list.length ? ' 나머지는 주소만 있어요.' : ''}` : `아카이브에는 ${word} 글의 주소만 저장돼요.${EMBED ? '' : ' 왼쪽 [API로 내용 보태기]로 본문까지 불러올 수 있어요.'}`}</span></div>`);
+  }
   renderMore();
 }
 function renderMore(){
@@ -881,7 +895,7 @@ function renderMore(){
   if (!slice.length) return;
   const tmp = document.createElement('div');
   if (S.tab === 'media') tmp.innerHTML = slice.map(({s, a, i}) => `<button class="gi" data-act="lightbox" data-sid="${esc(s.id)}" data-idx="${i}" aria-label="${esc(a.alt || '미디어')} 크게 보기">${a.type === 'video' ? `<video muted playsinline preload="metadata" data-media="${esc(a.path)}"></video><span class="play">${icon('play')}</span>` : `<img loading="lazy" alt="${esc(a.alt)}" data-media="${esc(a.path)}">`}</button>`).join('');
-  else if (S.tab === 'likes' || S.tab === 'bookmarks') tmp.innerHTML = slice.map(u => `<a class="linkcard" href="${esc(u)}" target="_blank" rel="noopener noreferrer"><span class="bi">${icon(S.tab === 'likes' ? 'star' : 'bookmark')}</span><div><b>${esc(acctFromUrl(u))}</b><span>${esc(shortUrl(u))}</span></div></a>`).join('');
+  else if (S.tab === 'likes' || S.tab === 'bookmarks') tmp.innerHTML = slice.map(u => { const o = fullOf(u); return o ? statusHTML(o, {inThread:true}) : `<a class="linkcard" href="${esc(u)}" target="_blank" rel="noopener noreferrer"><span class="bi">${icon(S.tab === 'likes' ? 'star' : 'bookmark')}</span><div><b>${esc(acctFromUrl(u))}</b><span>${esc(shortUrl(u))}</span></div></a>`; }).join('');
   else tmp.innerHTML = slice.map(s => statusHTML(s)).join('');
   hydrate(tmp);
   feed.append(...tmp.childNodes);
@@ -940,7 +954,12 @@ function renderLeft(){
   $('#years').innerHTML = years.map(([y, n]) => `<button data-year="${y}" aria-pressed="${S.year === y}"><span>${y}</span><span class="track"><span class="fill" style="display:block;width:${Math.max(3, n/ymax*100)}%"></span></span><span>${n.toLocaleString('ko-KR')}</span></button>`).join('');
   $('#tagcloud').innerHTML = tags.length ? tags.map(([t, n]) => `<button class="tagchip" data-tag="${esc(t)}">#${esc(t)}<b>${n}</b></button>`).join('') : '<p class="small">해시태그가 없어요.</p>';
   const gb = $('#group-toggle'); if (gb) gb.setAttribute('aria-pressed', S.group);
-  const ac = $('#api-count'); if (ac){ const n = Object.keys(S.data.others).length; ac.textContent = n ? `지금까지 다른 사람 글 ${n.toLocaleString('ko-KR')}개를 불러왔어요.` : ''; }
+  const ac = $('#api-count'); if (ac){
+    const parts = [], b = Object.keys(S.data.boostFull).length, conv = S.data.convos.reduce((n, c) => n + c.order.filter(x => !S.byId.has(x)).length, 0);
+    const lk = S.data.likes.filter(u => fullOf(u, 'likes')).length, bm = S.data.bookmarks.filter(u => fullOf(u, 'bookmarks')).length;
+    if (b) parts.push(`부스트 원문 ${b.toLocaleString('ko-KR')}`); if (lk) parts.push(`좋아요 본문 ${lk.toLocaleString('ko-KR')}`); if (bm) parts.push(`북마크 본문 ${bm.toLocaleString('ko-KR')}`); if (conv) parts.push(`대화 속 다른 사람 글 ${conv.toLocaleString('ko-KR')}`);
+    ac.textContent = parts.length ? '지금까지 불러온 것: ' + parts.join(' · ') : '';
+  }
   renderExCount();
   const loaded = !S.data.sample;
   document.querySelectorAll('[data-act="export"]').forEach(b => b.disabled = !loaded || !!EMBED);
@@ -977,12 +996,12 @@ function collapseThread(w){
 const API = {token:'', running:false, stop:false};
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 function ownOrigin(){ try { return new URL(S.data.actor.id).origin; } catch(e){ return ''; } }
-async function apiGet(path, onWait){
+async function apiGet(path, onWait, raw){
   const headers = {Accept:'application/json'};
   if (API.token) headers.Authorization = 'Bearer ' + API.token;
   for (let attempt = 0; attempt < 5; attempt++){
     let r;
-    try { r = await fetch(ownOrigin() + path, {headers, credentials:'omit'}); }
+    try { r = await fetch(/^https?:/i.test(path) ? path : ownOrigin() + path, {headers, credentials:'omit'}); }
     catch(e){ const err = new Error(window.self !== window.top ? '미리보기 화면에서는 다른 서버에 접속할 수 없어요. 받은 HTML 파일을 내 컴퓨터에서 열어 주세요.' : `${ownOrigin().replace(/^https?:\/\//,'')}에 연결하지 못했어요. 인스턴스가 닫혔거나 인터넷 연결에 문제가 있을 수 있어요.`); err.fatal = true; throw err; }
     if (r.status === 429){
       const reset = r.headers.get('X-RateLimit-Reset');
@@ -990,9 +1009,12 @@ async function apiGet(path, onWait){
       if (onWait) onWait(wait); await sleep(wait); continue;
     }
     if (r.status === 404 || r.status === 410) return null;
-    if (r.status === 401 || r.status === 403){ const err = new Error(API.token ? '토큰이 맞지 않거나 권한이 부족해요. read:statuses 권한이 있는 토큰인지 확인해 주세요.' : '이 인스턴스는 로그인 없이 글을 불러올 수 없게 되어 있어요. 아래에 액세스 토큰을 넣고 다시 시도해 주세요.'); err.fatal = true; throw err; }
+    if (r.status === 401 || r.status === 403){ const err = new Error(API.token ? '토큰이 맞지 않거나 권한이 부족해요. 사용 설명서의 [액세스 토큰 만들기]대로 read 권한이 있는지 확인해 주세요.' : '이 인스턴스는 로그인 없이 글을 불러올 수 없게 되어 있어요. 액세스 토큰을 넣고 다시 시도해 주세요.'); err.fatal = true; err.auth = true; throw err; }
     if (!r.ok){ if (attempt < 2){ await sleep(3000); continue; } throw new Error('서버 오류 (' + r.status + ')'); }
-    return r.json();
+    const json = await r.json();
+    if (!raw) return json;
+    const m = (r.headers.get('Link') || '').match(/<([^>]+)>\s*;\s*rel="next"/);
+    return {json, next: m ? m[1] : null};
   }
   throw new Error('요청이 너무 많다고 해요. 잠시 뒤 다시 시도해 주세요.');
 }
@@ -1054,35 +1076,104 @@ async function fetchOne(id, btn){
     renderLeft();
   } catch(e){ const o2 = $('#ctx-status'); if (o2){ o2.className = 'err'; o2.textContent = e.message; } btn.disabled = false; }
 }
-async function fetchAll(){
-  if (API.running){ API.stop = true; return; }
-  readToken();
-  const scope = $('#api-scope').value, prog = $('#api-progress'), btn = $('#api-go');
+function storeApi(st){
+  const own = (st.uri && S.byUri.get(normRef(st.uri))) || (st.url && S.byUri.get(normRef(st.url)));
+  if (own) return own;
+  const k = 'r' + st.id;
+  S.data.others[k] = fromApi(st, k);
+  return k;
+}
+async function pageAll(path, onItem, label, prog){
+  let url = path, pages = 0, n = 0;
+  while (url && !API.stop){
+    const r = await apiGet(url, w => { prog.textContent = `${label}: 요청 한도에 걸려 ${Math.ceil(w/1000)}초 기다리는 중…`; }, true);
+    if (!r) break;
+    for (const st of r.json){ if (onItem(st) === false){ return n; } n++; }
+    pages++; prog.textContent = `${label}: ${n.toLocaleString('ko-KR')}개 확인`;
+    url = r.next && r.json.length ? r.next : null;
+    if (url) await sleep(1100);
+  }
+  return n;
+}
+async function fetchLinked(kind, prog){
+  const list = kind === 'likes' ? S.data.likes : S.data.bookmarks;
+  const map = kind === 'likes' ? S.data.likeFull : S.data.bookmarkFull;
+  const have = new Set(list.map(normRef));
+  const extra = [];
+  let got = 0;
+  await pageAll(`/api/v1/${kind === 'likes' ? 'favourites' : 'bookmarks'}?limit=40`, st => {
+    const k = storeApi(st);
+    const refs = [st.uri, st.url].filter(Boolean).map(normRef);
+    refs.forEach(r => map[r] = k);
+    if (!refs.some(r => have.has(r))) extra.push(st.uri || st.url);
+    got++;
+  }, kind === 'likes' ? '좋아요한 글' : '북마크한 글', prog);
+  if (extra.length) list.unshift(...extra);
+  return got;
+}
+async function fetchBoosts(prog){
+  const boosts = S.data.statuses.filter(x => x.kind === 'boost');
+  const todo = boosts.filter(x => !S.data.boostFull[x.id]);
+  if (!todo.length) return {got:0, total:boosts.length, missing:0};
+  const byId = new Map(todo.map(x => [x.id, x])), byRef = new Map(todo.map(x => [normRef(x.boostOf), x]));
+  const acc = await apiGet(`/api/v1/accounts/lookup?acct=${encodeURIComponent(S.data.actor.username)}`);
+  if (!acc || !acc.id) throw new Error('서버에서 내 계정을 찾지 못했어요.');
+  let got = 0;
+  await pageAll(`/api/v1/accounts/${acc.id}/statuses?limit=40`, st => {
+    if (st.reblog){
+      const b = byId.get(String(st.id)) || byRef.get(normRef(st.reblog.uri)) || byRef.get(normRef(st.reblog.url));
+      if (b && !S.data.boostFull[b.id]){ S.data.boostFull[b.id] = storeApi(st.reblog); b._text = null; got++; }
+    }
+    if (got >= todo.length) return false;
+  }, `부스트 원문 (${todo.length.toLocaleString('ko-KR')}개 중 ${got}개 찾음)`, prog);
+  return {got, total:boosts.length, missing:todo.length - got};
+}
+async function fetchThreads(prog, results){
+  const scope = $('#api-scope').value;
   const roots = (s) => !s.inReplyToId;
   let cand = S.data.statuses.filter(s => s.kind === 'post' && !S.convOf.has(s.id)
     && (scope === 'all' || s.inReplyTo || S.children.has(s.id))
     && (API.token || s.visibility === 'public' || s.visibility === 'unlisted'));
   const skipped = API.token ? 0 : S.data.statuses.filter(s => s.kind === 'post' && (s.visibility === 'private' || s.visibility === 'direct') && (scope === 'all' || s.inReplyTo || S.children.has(s.id))).length;
   cand.sort((a,b) => (roots(b) - roots(a)) || (a._t - b._t));
-  if (!cand.length){ prog.className = 'small'; prog.textContent = '새로 불러올 게시물이 없어요.' + (skipped ? ` 비공개 글 ${skipped}개는 토큰이 있어야 불러올 수 있어요.` : ''); return; }
-  API.running = true; API.stop = false; btn.textContent = '멈추기'; prog.className = 'small';
-  let done = 0, got = 0, err = null, fails = 0, lastErr = '';
-  const t0 = Date.now();
+  let done = 0, got = 0, fails = 0, lastErr = '';
   for (const s of cand){
     if (API.stop) break;
     if (S.convOf.has(s.id)){ done++; continue; }
     const left = cand.length - done;
-    prog.textContent = `${done.toLocaleString('ko-KR')} / ${cand.length.toLocaleString('ko-KR')} 확인 · 다른 사람 글 ${got.toLocaleString('ko-KR')}개 · 남은 시간 약 ${Math.max(1, Math.ceil(left * 1.15 / 60))}분`;
-    try { got += await fetchContext(s.id, w => { prog.textContent = `요청 한도에 걸려 ${Math.ceil(w/1000)}초 기다리는 중… (${done} / ${cand.length})`; }); }
-    catch(e){ if (e.fatal){ err = e; break; } fails++; lastErr = e.message; if (done === 0 && fails >= 3 && cand.length > 5){ err = new Error('처음 몇 개가 모두 실패했어요: ' + lastErr + ' [문제 진단]을 눌러 확인해 주세요.'); break; } }
+    prog.textContent = `대화: ${done.toLocaleString('ko-KR')} / ${cand.length.toLocaleString('ko-KR')} 확인 · 다른 사람 글 ${got.toLocaleString('ko-KR')}개 · 남은 시간 약 ${Math.max(1, Math.ceil(left * 1.15 / 60))}분`;
+    try { got += await fetchContext(s.id, w => { prog.textContent = `대화: 요청 한도에 걸려 ${Math.ceil(w/1000)}초 기다리는 중… (${done} / ${cand.length})`; }); }
+    catch(e){ if (e.fatal) throw e; fails++; lastErr = e.message; if (done === 0 && fails >= 3 && cand.length > 5) throw new Error('처음 몇 개가 모두 실패했어요: ' + lastErr + ' [문제 진단]을 눌러 확인해 주세요.'); }
     done++;
     await sleep(1100);
   }
-  API.running = false; btn.textContent = '대화 불러오기 시작';
+  results.push(cand.length ? `대화: 게시물 ${done.toLocaleString('ko-KR')}개를 확인해 다른 사람 글 ${got.toLocaleString('ko-KR')}개` : '대화: 새로 불러올 게시물 없음');
+  if (skipped) results.push(`비공개 글 ${skipped}개의 대화는 토큰이 없어서 건너뜀`);
+  if (fails) results.push(`대화 ${fails}개 실패 (${lastErr})`);
+}
+async function fetchAll(){
+  if (API.running){ API.stop = true; return; }
+  readToken();
+  const want = id => { const c = $('#' + id); return c && c.checked; };
+  const prog = $('#api-progress'), btn = $('#api-go');
+  if (!['api-boosts','api-likes','api-bookmarks','api-threads'].some(want)){ prog.className = 'small'; prog.textContent = '불러올 항목을 하나 이상 골라 주세요.'; return; }
+  API.running = true; API.stop = false; btn.textContent = '멈추기'; prog.className = 'small';
+  const results = [], t0 = Date.now();
+  let err = null;
+  const phase = async (name, fn) => {
+    if (API.stop || err) return;
+    try { await fn(); }
+    catch(e){ if (e.auth && name !== 'threads'){ results.push(`${({boosts:'부스트 원문', likes:'좋아요', bookmarks:'북마크'})[name]}: ${API.token ? '토큰 권한이 부족해서 건너뜀' : '토큰이 있어야 해서 건너뜀'}`); } else err = e; }
+  };
+  if (want('api-boosts')) await phase('boosts', async () => { const r = await fetchBoosts(prog); results.push(r.total ? `부스트 원문 ${r.got.toLocaleString('ko-KR')}개` + (r.missing ? ` (${r.missing}개는 원래 글이 지워졌거나 찾지 못함)` : '') : '부스트: 아카이브에 부스트 없음'); });
+  if (want('api-likes')) await phase('likes', async () => { if (!API.token) { const e = new Error(''); e.auth = true; throw e; } const n = await fetchLinked('likes', prog); results.push(`좋아요한 글 본문 ${n.toLocaleString('ko-KR')}개`); });
+  if (want('api-bookmarks')) await phase('bookmarks', async () => { if (!API.token) { const e = new Error(''); e.auth = true; throw e; } const n = await fetchLinked('bookmarks', prog); results.push(`북마크한 글 본문 ${n.toLocaleString('ko-KR')}개`); });
+  if (want('api-threads')) await phase('threads', () => fetchThreads(prog, results));
+  API.running = false; btn.textContent = '불러오기 시작';
   const mins = Math.round((Date.now() - t0) / 60000);
-  if (err){ prog.className = 'err'; prog.textContent = err.message + (got ? ` (그 전까지 다른 사람 글 ${got}개는 불러왔어요.)` : ''); }
-  else prog.textContent = `${API.stop ? '멈췄어요. ' : '다 불러왔어요. '}게시물 ${done.toLocaleString('ko-KR')}개를 확인해서 다른 사람 글 ${got.toLocaleString('ko-KR')}개를 가져왔어요${mins ? ` (${mins}분)` : ''}. 내보내기를 하면 함께 저장돼요.` + (skipped ? ` 비공개 글 ${skipped}개는 토큰이 없어서 건너뛰었어요.` : '') + (fails ? ` ${fails}개는 실패했어요 (${lastErr}).` : '');
-  renderLeft(); refreshList();
+  if (err){ prog.className = 'err'; prog.textContent = err.message + (results.length ? ' 그 전까지: ' + results.join(' · ') : ''); }
+  else prog.textContent = `${API.stop ? '멈췄어요.' : '다 불러왔어요.'} ${results.join(' · ')}${mins ? ` (${mins}분)` : ''}. 내보내기를 하면 함께 저장돼요.`;
+  renderLeft(); renderRight(); refreshList();
 }
 
 /* ---------- exclude from export ---------- */
@@ -1249,7 +1340,9 @@ function exportPayload(){
       if (order.length) convos.push({order, parent:np});
     }
   }
-  return {actor:S.data.actor, statuses, others, convos, likes:withLinks ? S.data.likes : [], bookmarks:withLinks ? S.data.bookmarks : [], exportedAt:new Date().toISOString()};
+  const pick = m => { const o = {}; for (const [r, k] of Object.entries(m || {})) if (kept.has(k)) o[r] = k; return o; };
+  const boostFull = pick(S.data.boostFull), likeFull = withLinks ? pick(S.data.likeFull) : {}, bookmarkFull = withLinks ? pick(S.data.bookmarkFull) : {};
+  return {actor:S.data.actor, statuses, others, convos, boostFull, likeFull, bookmarkFull, likes:withLinks ? S.data.likes : [], bookmarks:withLinks ? S.data.bookmarks : [], exportedAt:new Date().toISOString()};
 }
 function saveBlob(blob, name){
   const u = URL.createObjectURL(blob); const a = document.createElement('a');
@@ -1331,13 +1424,19 @@ function buildShell(){
     <section class="panel collapsible"><h3>공개 범위</h3><div class="chips" id="vis-chips"></div>
       <div class="chips" style="margin-top:10px"><button class="chip" id="group-toggle" data-act="group" aria-pressed="true">${icon('replies')}이어 쓴 타래 하나로 묶기</button></div>
       <div class="row" style="margin-top:12px"><label for="sort" class="small">정렬</label><select id="sort"><option value="new">최신순</option><option value="old">오래된순</option></select></div></section>
-    ${EMBED ? '' : `<section class="panel collapsible" id="api-panel"><h3>다른 사람 글 함께 백업</h3>
-      <p class="small">내 인스턴스에 남아 있는 대화를 불러와서, 내 글에 달린 답글이나 내가 답한 원래 글까지 같이 저장해요. 인스턴스와 계정이 아직 살아 있어야 해요.</p>
-      <div class="row" style="margin-top:10px"><select id="api-scope" aria-label="불러올 범위"><option value="threads">답글과 타래만 (빠름)</option><option value="all">모든 내 글 (느림)</option></select></div>
-      <details style="margin-top:10px"><summary class="small" style="cursor:pointer">비공개 글도 불러오기 (액세스 토큰)</summary>
-        <p class="small" style="margin:8px 0">인스턴스의 환경설정 → 개발 → 새 애플리케이션에서 <b>read:statuses</b> 권한으로 만든 액세스 토큰을 넣으세요. 이 페이지가 열려 있는 동안만 쓰이고 어디에도 저장되지 않아요. <button class="linkbtn" data-act="help" data-sec="h-token">토큰 만드는 법</button></p>
+    ${EMBED ? '' : `<section class="panel collapsible" id="api-panel"><h3>API로 내용 보태기</h3>
+      <p class="small">아카이브에 빠진 내용을 내 인스턴스 서버에서 받아와 채워요. 인스턴스와 계정이 아직 살아 있어야 해요.</p>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:10px;font-size:14px">
+        <label class="row"><input type="checkbox" id="api-boosts" checked>부스트한 글 원문</label>
+        <label class="row"><input type="checkbox" id="api-likes" checked>좋아요한 글 본문 <span class="small">(토큰 필요)</span></label>
+        <label class="row"><input type="checkbox" id="api-bookmarks" checked>북마크한 글 본문 <span class="small">(토큰 필요)</span></label>
+        <label class="row"><input type="checkbox" id="api-threads" checked>답글·타래 속 다른 사람 글</label>
+      </div>
+      <div class="row" style="margin-top:8px"><select id="api-scope" aria-label="대화를 불러올 범위"><option value="threads">대화: 답글과 타래만 (빠름)</option><option value="all">대화: 모든 내 글 (느림)</option></select></div>
+      <details style="margin-top:10px" open><summary class="small" style="cursor:pointer">액세스 토큰</summary>
+        <p class="small" style="margin:8px 0">좋아요·북마크와 팔로워 전용 글에는 <b>read</b> 권한 토큰이 필요해요. 이 페이지가 열려 있는 동안만 쓰이고 어디에도 저장되지 않아요. <button class="linkbtn" data-act="help" data-sec="h-token">토큰 만드는 법</button></p>
         <input id="api-token" type="password" autocomplete="off" placeholder="액세스 토큰" style="width:100%;background:var(--col);border:1px solid var(--line);border-radius:6px;padding:8px 10px"></details>
-      <button class="btn block" id="api-go" data-act="fetchall" style="margin-top:10px">대화 불러오기 시작</button>
+      <button class="btn block" id="api-go" data-act="fetchall" style="margin-top:10px">불러오기 시작</button>
       <p class="small" id="api-progress" role="status" aria-live="polite" style="margin-top:8px"></p>
       <p class="small" id="api-count"></p>
       <button class="linkbtn" data-act="diagnose" style="margin-top:6px">문제 진단</button></section>`}
@@ -1372,7 +1471,7 @@ function buildShell(){
     <fieldset><legend>포함할 공개 범위</legend>${Object.entries(VIS).map(([k, v]) => `<label><input type="checkbox" id="ex-vis-${k}" data-exvis="${k}" ${k === 'direct' ? '' : 'checked'}>${icon(v.icon)}${v.label}</label>`).join('')}</fieldset>
     <p class="note" id="ex-excluded"></p>
     <label><input type="checkbox" id="ex-links" checked>좋아요·북마크 목록 포함</label>
-    <label><input type="checkbox" id="ex-others" checked>불러온 다른 사람 글 포함</label>
+    <label><input type="checkbox" id="ex-others" checked>API로 불러온 내용 포함 (부스트 원문, 좋아요·북마크 본문, 대화 속 다른 사람 글)</label>
     <label><input type="checkbox" id="ex-remote" checked>다른 사람 글의 프로필 사진·이미지도 zip에 담기</label>
     <p class="note" id="ex-frame-note" hidden>미리보기 화면 안에서는 파일 저장이 막혀 있어요. 받은 HTML 파일을 내 컴퓨터에서 브라우저로 열어 내보내 주세요.</p>
     <p class="note">공개 사이트로 올릴 때는 팔로워 전용·개인적인 멘션을 빼는 걸 권해요.</p>
